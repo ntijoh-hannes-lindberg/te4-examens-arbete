@@ -1,0 +1,66 @@
+body {
+  margin: 0;
+  background-color: rgb(37, 37, 37);
+
+  color: white;
+  font-family: "Saria", sans-serif;
+}
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.body-container {
+  display: flex;
+  flex: 1;
+}
+
+.main-content {
+  flex: 1;
+
+  padding: 3rem;
+}
+
+header {
+  padding: 1rem;
+  border-bottom: solid 1px rgba(245, 241, 241, 0.120);
+}
+
+header ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+
+}
+
+header a {
+  color: white;
+  text-decoration: none;
+}
+
+aside {
+  border-right: solid 1px rgba(245, 241, 241, 0.120);
+  width: 200px;
+}
+
+aside ul {
+  list-style: none;
+  margin-top: 0.5rem;
+  padding: 0;
+}
+
+aside a {
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  display: block;
+  padding: 0.5rem;
+}
+
+aside a:hover {
+  border-radius: 0.5rem;
+  color: rgba(255, 255, 255, 1);
+  background-color: rgba(0, 0, 0, 0.714);
+}
+
