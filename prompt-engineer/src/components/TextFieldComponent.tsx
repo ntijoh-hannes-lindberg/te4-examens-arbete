@@ -1,7 +1,13 @@
+import { newPrompt } from "../services/apiService";
+
 function TextFieldComponent({ prompt, setPrompt }) {
-    function handleSubmit(formData: FormData) {
+    async function handleSubmit(formData: FormData) {
         const value = formData.get('query');
-        alert(`Hello, ${value}!`);
+        
+        const error = await newPrompt(value)
+        if (error) {
+            alert(error)
+        }
     }
 
     return (

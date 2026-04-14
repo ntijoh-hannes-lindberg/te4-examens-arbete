@@ -2,10 +2,12 @@ import TextFieldComponent from '../components/TextFieldComponent';
 
 function Prompt({ prompt, setPrompt }) {
   return (
-    <>
+    <section>
       <h2>Prompt page</h2>
-      <TextFieldComponent prompt={prompt} setPrompt={setPrompt} />
-    </>
+      <div className='page-content'>
+        <TextFieldComponent prompt={prompt} setPrompt={setPrompt} />
+      </div>
+    </section>
   );
 }
 
