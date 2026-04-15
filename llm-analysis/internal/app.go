@@ -11,12 +11,16 @@ import (
 type App struct {
 	router *chi.Mux
 	port   string
+	db     *DB
 }
 
 func NewApp() (*App, error) {
+	db := NewDB()
+
 	a := &App{
 		router: chi.NewRouter(),
 		port:   "8080",
+		db:     db,
 	}
 
 	a.router.Use(cors.Handler(cors.Options{

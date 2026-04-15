@@ -7,8 +7,7 @@ import (
 )
 
 type Prompt struct {
-	ID   string `json:"id"`
-	Text string `json:"text"`
+	Text string
 }
 
 func (a *App) newPrompt(w http.ResponseWriter, r *http.Request) {
@@ -17,6 +16,11 @@ func (a *App) newPrompt(w http.ResponseWriter, r *http.Request) {
 	var prompt Prompt
 	if err := json.NewDecoder(r.Body).Decode(&prompt); err != nil {
 		http.Error(w, "Invalid request", http.StatusBadRequest)
+		return
+	}
+
+	if err := a.db.newPrompt(prompt.Text); err != nil {
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 
