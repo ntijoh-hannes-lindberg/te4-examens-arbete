@@ -24,13 +24,14 @@ func NewApp() (*App, error) {
 	}
 
 	a.router.Use(cors.Handler(cors.Options{
-		AllowedOrigins:   []string{"*"},
+		AllowedOrigins:   []string{"http://localhost:5173"},
 		AllowedMethods:   []string{"GET", "POST", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type"},
 		AllowCredentials: true,
 	}))
 
-	a.router.Post("/prompt", a.newPrompt)
+	a.router.Post("/prompts", a.newPromptHandler)
+	a.router.Get("/prompts", a.allPromptsHandler)
 
 	return a, nil
 }
