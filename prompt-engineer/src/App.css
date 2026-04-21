@@ -68,3 +68,17 @@ section {
   display: flex;
   flex-direction: column;
 }
+
+.prompt-input {
+  width: 100%;
+  min-height: 48px;
+  max-height: 300px;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  resize: none;
+  overflow-y: auto;
+  font-size: 16px;
+  line-height: 1.4;
+  font-size: 15px;
+}

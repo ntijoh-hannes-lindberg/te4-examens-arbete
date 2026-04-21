@@ -2,12 +2,19 @@ import { useEffect, useState } from "react";
 import { allPrompts, deletePrompt } from "../services/apiService";
 import { type Prompt } from "../../types/prompt";
 
-function CardContainerComponent() {
+interface Props {
+    onSelect: (text: string) => void;
+}
+
+function PromptListComponent({ onSelect }: Props) {
     const [prompts, setPrompts] = useState<Prompt[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         fetchPrompts();
+
+        window.addEventListener("prompt-created", fetchPrompts);
+        return () => window.removeEventListener("prompt-created", fetchPrompts);
     }, []);
 
     async function fetchPrompts() {
@@ -32,7 +39,12 @@ function CardContainerComponent() {
         <>
             {prompts.map((prompt) => (
                 <div key={prompt.id}>
-                    <p>{prompt.text}</p>
+                    <p
+                        onClick={() => onSelect(prompt.text)}
+                        style={{ cursor: "pointer" }}
+                    >
+                        {prompt.text}
+                    </p>
                     <button onClick={() => handleDelete(prompt.id)}>Delete</button>
                 </div>
             ))}
@@ -40,4 +52,4 @@ function CardContainerComponent() {
     );
 }
 
-export default CardContainerComponent;
+export default PromptListComponent;
