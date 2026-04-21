@@ -16,7 +16,7 @@ export async function newPrompt(prompt): Promise<string> {
         if (!response.ok) {
             throw new Error(response.status + " " + response.statusText);
         }
-
+        redirect("/prompts")
         return null
     } catch (e) {
         console.error("Posting new prompt: ", e);
@@ -59,4 +59,8 @@ export async function deletePrompt(id: string) {
         console.error("Deleting prompt: ", e);
         return e.message
     }
+}
+
+export function sleep(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
