@@ -21,11 +21,16 @@ type Prompt struct {
 func NewDB() *DB {
 	godotenv.Load()
 
-	conn, err := pgx.Connect(context.Background(), os.Getenv("DATABASE_URL"))
+	config, err := pgx.ParseConfig(os.Getenv("DATABASE_URL"))
+	if err != nil {
+		os.Exit(1)
+	}
+	config.DefaultQueryExecMode = pgx.QueryExecModeSimpleProtocol
+	conn, err := pgx.ConnectConfig(context.Background(), config)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
+		os.Exit(1)
 	}
-
 	return &DB{
 		conn: conn,
 	}
@@ -39,7 +44,7 @@ func (db *DB) allPrompts() ([]Prompt, error) {
 	}
 	defer rows.Close()
 
-	var prompts []Prompt
+	prompts := []Prompt{}
 	for rows.Next() {
 		var p Prompt
 		if err := rows.Scan(&p.ID, &p.Text); err != nil {
@@ -56,5 +61,15 @@ func (db *DB) newPrompt(text string) error {
 	if err != nil {
 		return fmt.Errorf("Posting prompt: %w", err)
 	}
+	return nil
+}
+
+func (db *DB) deletePrompt(id int8) error {
+	var err error
+	_, err = db.conn.Exec(context.Background(), "DELETE FROM prompts WHERE id = $1;", id)
+	if err != nil {
+		return fmt.Errorf("deleting prompt: %w", err)
+	}
+
 	return nil
 }

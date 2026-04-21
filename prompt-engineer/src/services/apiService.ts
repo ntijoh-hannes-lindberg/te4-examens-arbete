@@ -1,3 +1,5 @@
+import { redirect } from "react-router-dom";
+
 export async function newPrompt(prompt): Promise<string> {
     try {
         const response = await fetch(
@@ -38,5 +40,23 @@ export async function allPrompts() {
     } catch (e) {
         console.error("Posting new prompt: ", e);
         throw e
+    }
+}
+
+export async function deletePrompt(id: string) {
+    try {
+        const response = await fetch(
+            `http://localhost:8080/prompts/delete/${id}`, {
+            method: "DELETE",
+        });
+
+        if (!response.ok) {
+            throw new Error(response.status + " " + response.statusText);
+        }
+        redirect("/stats")
+        return null
+    } catch (e) {
+        console.error("Deleting prompt: ", e);
+        return e.message
     }
 }

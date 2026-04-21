@@ -25,13 +25,14 @@ func NewApp() (*App, error) {
 
 	a.router.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:5173"},
-		AllowedMethods:   []string{"GET", "POST", "OPTIONS"},
+		AllowedMethods:   []string{"GET", "POST", "OPTIONS", "DELETE"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type"},
 		AllowCredentials: true,
 	}))
 
 	a.router.Post("/prompts", a.newPromptHandler)
 	a.router.Get("/prompts", a.allPromptsHandler)
+	a.router.Delete("/prompts/delete/{id}", a.deletePromptHandler)
 
 	return a, nil
 }

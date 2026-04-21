@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+
+	"github.com/go-chi/chi/v5"
 )
 
 func (a *App) newPromptHandler(w http.ResponseWriter, r *http.Request) {
@@ -40,4 +42,27 @@ func (a *App) allPromptsHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
 		return
 	}
+}
+
+func (a *App) deletePromptHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Printf("%s %s ", r.Method, r.URL.Path)
+
+	promptIDStr := chi.URLParam(r, "id")
+	var promptID int8
+	_, err := fmt.Sscanf(promptIDStr, "%d", &promptID)
+	if err != nil {
+		http.Error(w, "Invalid prompt ID", http.StatusBadRequest)
+		return
+	}
+
+	fmt.Printf("attempting to delete prompt id=%d\n", promptID) // <-- add
+
+	if err := a.db.deletePrompt(promptID); err != nil {
+		fmt.Printf("deletePrompt error: %v\n", err) // <-- add
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	fmt.Println("200 OK")
+	w.WriteHeader(http.StatusOK)
 }
