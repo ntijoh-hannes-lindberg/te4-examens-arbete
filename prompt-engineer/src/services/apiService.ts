@@ -19,8 +19,7 @@ export async function newPrompt(prompt): Promise<string> {
         redirect("/prompts")
         return null
     } catch (e) {
-        console.error("Posting new prompt: ", e);
-        return e.message
+        return new Error("Posting new prompt: " + e.message)
     }
 }
 

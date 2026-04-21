@@ -3,24 +3,36 @@ package internal
 import (
 	"fmt"
 	"net/http"
+	aiproviders "te4-examens-arbete/llm-analysis/internal/ai_providers"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
 )
 
 type App struct {
-	router *chi.Mux
-	port   string
-	db     *DB
+	router     *chi.Mux
+	port       string
+	db         *DB
+	aiProvider AIProvider
+}
+
+type AIProvider interface {
+	CallLLM(userPrompt string) (string, error)
 }
 
 func NewApp() (*App, error) {
 	db := NewDB()
 
+	aiProvider, err := aiproviders.NewOpenRouterAIProvider()
+	if err != nil {
+		return nil, fmt.Errorf("creating AI provider: %w", err)
+	}
+
 	a := &App{
-		router: chi.NewRouter(),
-		port:   "8080",
-		db:     db,
+		router:     chi.NewRouter(),
+		port:       "8080",
+		db:         db,
+		aiProvider: aiProvider,
 	}
 
 	a.router.Use(cors.Handler(cors.Options{

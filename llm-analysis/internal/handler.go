@@ -17,14 +17,19 @@ func (a *App) newPromptHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := a.db.newPrompt(prompt.Text); err != nil {
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+	if err := a.db.newPrompt(string(prompt.Text)); err != nil {
+		http.Error(w, "Inserting prompt to DB", http.StatusInternalServerError)
 		return
+	}
+
+	aiOutput, err := a.aiProvider.CallLLM(prompt.Text)
+	if err != nil {
+		http.Error(w, "Calling LLM", http.StatusInternalServerError)
 	}
 
 	fmt.Println("200 OK")
 	w.Header().Set("Content-Type", "text/plain")
-	w.Write([]byte(prompt.Text))
+	w.Write([]byte(aiOutput))
 }
 
 func (a *App) allPromptsHandler(w http.ResponseWriter, r *http.Request) {
