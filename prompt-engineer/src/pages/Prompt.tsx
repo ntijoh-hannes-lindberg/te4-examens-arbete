@@ -1,14 +1,19 @@
-import TextFieldComponent from '../components/TextFieldComponent';
+import PromptInputComponent from "../components/PromptInputComponent";
+import PromptListComponent from "../components/PromptListComponent";
 
-function Prompt({ prompt, setPrompt }) {
-  return (
-    <section>
-      <h2>Prompt</h2>
-      <div className='page-content'>
-        <TextFieldComponent prompt={prompt} setPrompt={setPrompt} />
-      </div>
-    </section>
-  );
+interface Props {
+    prompt: string;
+    setPrompt: (value: string) => void;
+}
+
+function Prompt({ prompt, setPrompt }: Props) {
+  
+    return (
+        <>
+            <PromptInputComponent prompt={prompt} setPrompt={setPrompt} />
+            <PromptListComponent onSelect={setPrompt} />
+        </>
+    );
 }
 
 export default Prompt;

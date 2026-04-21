@@ -16,7 +16,6 @@ export async function newPrompt(prompt): Promise<string> {
         if (!response.ok) {
             throw new Error(response.status + " " + response.statusText);
         }
-        redirect("/prompts")
         return null
     } catch (e) {
         return new Error("Posting new prompt: " + e.message)
@@ -33,7 +32,6 @@ export async function allPrompts() {
         if (!response.ok) {
             throw new Error(response.status + " " + response.statusText);
         }
-
         const jsonResponse = await response.json()
         return jsonResponse 
     } catch (e) {
@@ -52,7 +50,6 @@ export async function deletePrompt(id: string) {
         if (!response.ok) {
             throw new Error(response.status + " " + response.statusText);
         }
-        redirect("/stats")
         return null
     } catch (e) {
         console.error("Deleting prompt: ", e);
