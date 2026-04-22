@@ -17,6 +17,10 @@ type Prompt struct {
 	ID   int8   `json:"id"`
 	Text string `json:"text"`
 }
+type Output struct {
+	ID   int8   `json:"id"`
+	Text string `json:"text"`
+}
 
 func NewDB() *DB {
 	godotenv.Load()
@@ -78,6 +82,34 @@ func (db *DB) deletePrompt(id int8) error {
 	_, err = db.conn.Exec(context.Background(), "DELETE FROM prompts WHERE id = $1;", id)
 	if err != nil {
 		return fmt.Errorf("deleting prompt: %w", err)
+	}
+
+	return nil
+}
+
+func (db *DB) allOutputs() ([]Output, error) {
+	rows, err := db.conn.Query(context.Background(), "SELECT id, text FROM outputs")
+	if err != nil {
+		return nil, fmt.Errorf("getting all outputs: %w", err)
+	}
+	defer rows.Close()
+
+	outputs := []Output{}
+	for rows.Next() {
+		var o Output
+		if err := rows.Scan(&o.ID, &o.Text); err != nil {
+			return nil, fmt.Errorf("scan failed: %w", err)
+		}
+		outputs = append(outputs, o)
+	}
+	return outputs, nil
+}
+
+func (db *DB) deleteOutput(id int8) error {
+	var err error
+	_, err = db.conn.Exec(context.Background(), "DELETE FROM outputs WHERE id = $1;", id)
+	if err != nil {
+		return fmt.Errorf("deleting output: %w", err)
 	}
 
 	return nil

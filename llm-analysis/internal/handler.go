@@ -54,6 +54,22 @@ func (a *App) allPromptsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+func (a *App) allOutputsHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Printf("%s %s ", r.Method, r.URL.Path)
+
+	outputs, err := a.db.allOutputs()
+	if err != nil {
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	fmt.Println("200 OK")
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(outputs); err != nil {
+		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+		return
+	}
+}
 
 func (a *App) deletePromptHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("%s %s ", r.Method, r.URL.Path)
@@ -70,6 +86,29 @@ func (a *App) deletePromptHandler(w http.ResponseWriter, r *http.Request) {
 
 	if err := a.db.deletePrompt(promptID); err != nil {
 		fmt.Printf("deletePrompt error: %v\n", err) // <-- add
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	fmt.Println("200 OK")
+	w.WriteHeader(http.StatusOK)
+}
+
+func (a *App) deleteOutputHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Printf("%s %s ", r.Method, r.URL.Path)
+
+	outputIDStr := chi.URLParam(r, "id")
+	var outputID int8
+	_, err := fmt.Sscanf(outputIDStr, "%d", &outputID)
+	if err != nil {
+		http.Error(w, "Invalid output ID", http.StatusBadRequest)
+		return
+	}
+
+	fmt.Printf("attempting to delete output id=%d\n", outputID) // <-- add
+
+	if err := a.db.deleteOutput(outputID); err != nil {
+		fmt.Printf("deleteOutput error: %v\n", err) // <-- add
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
