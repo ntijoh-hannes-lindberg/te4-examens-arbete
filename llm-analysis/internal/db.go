@@ -61,11 +61,12 @@ func (db *DB) newPrompt(text string) error {
 	if err != nil {
 		return fmt.Errorf("posting prompt: %w", err)
 	}
+
 	return nil
 }
 
 func (db *DB) newOutput(text string) error {
-	_, err := db.conn.Exec(context.Background(), "INSERT INTO output (text) VALUES ($1);", text)
+	_, err := db.conn.Exec(context.Background(), "INSERT INTO outputs (text) VALUES ($1);", text)
 	if err != nil {
 		return fmt.Errorf("posting output: %w", err)
 	}
