@@ -2,117 +2,84 @@ package internal
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/go-chi/chi/v5"
 )
 
 func (a *App) newPromptHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Printf("%s %s ", r.Method, r.URL.Path)
 
 	var prompt Prompt
-	if err := json.NewDecoder(r.Body).Decode(&prompt); err != nil {
-		http.Error(w, "Invalid request", http.StatusBadRequest)
-		return
-	}
-
-	aiOutput, err := a.aiProvider.CallLLM(prompt.Text)
+	err := json.NewDecoder(r.Body).Decode(&prompt)
 	if err != nil {
-		http.Error(w, "Calling LLM", http.StatusInternalServerError)
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
 
-	if err := a.db.newPrompt(string(prompt.Text)); err != nil {
-		http.Error(w, "Inserting prompt to DB", http.StatusInternalServerError)
+	err = a.db.newPrompt(prompt.Text, prompt.Type)
+	if err != nil {
+		http.Error(w, "Failed to insert prompt", http.StatusInternalServerError)
 		return
 	}
 
-	if err := a.db.newOutput(aiOutput); err != nil {
-		http.Error(w, "Insertin AI output to DB", http.StatusInternalServerError)
-		return
-	}
-
-	fmt.Println("200 OK")
-	w.Header().Set("Content-Type", "text/plain")
-	w.Write([]byte(aiOutput))
+	w.WriteHeader(http.StatusCreated)
 }
 
 func (a *App) allPromptsHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Printf("%s %s ", r.Method, r.URL.Path)
-
-	prompts, err := a.db.allPrompts()
+	prompts, err := a.db.getAllPrompts()
 	if err != nil {
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		http.Error(w, "Failed to fetch prompts", http.StatusInternalServerError)
 		return
 	}
 
-	fmt.Println("200 OK")
 	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(prompts); err != nil {
-		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
-		return
-	}
-}
-func (a *App) allOutputsHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Printf("%s %s ", r.Method, r.URL.Path)
-
-	outputs, err := a.db.allOutputs()
-	if err != nil {
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-
-	fmt.Println("200 OK")
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(outputs); err != nil {
-		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
-		return
-	}
-}
-
-func (a *App) deletePromptHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Printf("%s %s ", r.Method, r.URL.Path)
-
-	promptIDStr := chi.URLParam(r, "id")
-	var promptID int8
-	_, err := fmt.Sscanf(promptIDStr, "%d", &promptID)
-	if err != nil {
-		http.Error(w, "Invalid prompt ID", http.StatusBadRequest)
-		return
-	}
-
-	fmt.Printf("attempting to delete prompt id=%d\n", promptID) // <-- add
-
-	if err := a.db.deletePrompt(promptID); err != nil {
-		fmt.Printf("deletePrompt error: %v\n", err) // <-- add
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-
-	fmt.Println("200 OK")
-	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(prompts)
 }
 
 func (a *App) deleteOutputHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Printf("%s %s ", r.Method, r.URL.Path)
+	id := chi.URLParam(r, "id")
 
-	outputIDStr := chi.URLParam(r, "id")
-	var outputID int8
-	_, err := fmt.Sscanf(outputIDStr, "%d", &outputID)
+	idNum, err := strconv.ParseInt(id, 10, 8)
 	if err != nil {
-		http.Error(w, "Invalid output ID", http.StatusBadRequest)
+		http.Error(w, "Invalid id", http.StatusBadRequest)
 		return
 	}
 
-	fmt.Printf("attempting to delete output id=%d\n", outputID) // <-- add
-
-	if err := a.db.deleteOutput(outputID); err != nil {
-		fmt.Printf("deleteOutput error: %v\n", err) // <-- add
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+	err = a.db.deleteOutput(int8(idNum))
+	if err != nil {
+		http.Error(w, "Failed to delete output", http.StatusInternalServerError)
 		return
 	}
 
-	fmt.Println("200 OK")
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (a *App) deletePromptHandler(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+
+	idNum, err := strconv.ParseInt(id, 10, 8)
+	if err != nil {
+		http.Error(w, "Invalid id", http.StatusBadRequest)
+		return
+	}
+
+	err = a.db.deletePrompt(int8(idNum))
+	if err != nil {
+		http.Error(w, "Failed to delete prompt", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (a *App) allOutputsHandler(w http.ResponseWriter, r *http.Request) {
+	outputs, err := a.db.getAllOutputs()
+	if err != nil {
+		http.Error(w, "Failed to fetch outputs", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(outputs)
 }

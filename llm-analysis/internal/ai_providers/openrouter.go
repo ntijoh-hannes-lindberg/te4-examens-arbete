@@ -34,10 +34,11 @@ func NewOpenRouterAIProvider() (*OpenRouterAIProvider, error) {
 	}, nil
 }
 
-func (p *OpenRouterAIProvider) CallLLM(userPrompt string) (string, error) {
+func (p *OpenRouterAIProvider) CallLLM(userPrompt string, systemPrompt string) (string, error) {
 	response, err := p.client.Chat.Completions.New(context.Background(), openai.ChatCompletionNewParams{
 		Model: p.model,
 		Messages: []openai.ChatCompletionMessageParamUnion{
+			openai.SystemMessage(systemPrompt),
 			openai.UserMessage(userPrompt),
 		},
 	})

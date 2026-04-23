@@ -31,9 +31,8 @@ function PromptListComponent({ onSelect }: Props) {
         const err = await deletePrompt(String(id));
         if (!err) fetchPrompts();
     }
-
     if (loading) return <p>Loading...</p>;
-    if (prompts.length === 0) return <p>No prompts found!</p>;
+    if (prompts.length == 0) return <p>No prompts found!</p>;
 
     return (
         <>
@@ -43,7 +42,7 @@ function PromptListComponent({ onSelect }: Props) {
                         onClick={() => onSelect(prompt.text)}
                         style={{ cursor: "pointer" }}
                     >
-                        {prompt.text}
+                        Query: {prompt.text} Type: {prompt.type}
                     </p>
                     <button onClick={() => handleDelete(prompt.id)}>Delete</button>
                 </div>
