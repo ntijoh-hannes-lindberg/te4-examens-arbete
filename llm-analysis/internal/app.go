@@ -17,7 +17,7 @@ type App struct {
 }
 
 type AIProvider interface {
-	CallLLM(userPrompt string) (string, error)
+	CallLLM(userPrompt string, systemPrompt string) (string, error)
 }
 
 func NewApp() (*App, error) {
@@ -41,10 +41,9 @@ func NewApp() (*App, error) {
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type"},
 		AllowCredentials: true,
 	}))
-
 	a.router.Post("/prompts", a.newPromptHandler)
-	a.router.Get("/outputs", a.allOutputsHandler)
 	a.router.Get("/prompts", a.allPromptsHandler)
+	a.router.Get("/outputs", a.allOutputsHandler)
 	a.router.Delete("/prompts/delete/{id}", a.deletePromptHandler)
 	a.router.Delete("/outputs/delete/{id}", a.deleteOutputHandler)
 

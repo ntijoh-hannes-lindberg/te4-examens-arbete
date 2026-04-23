@@ -1,6 +1,4 @@
-import { redirect } from "react-router-dom";
-
-export async function newPrompt(prompt): Promise<string> {
+export async function newPrompt(prompt, type): Promise<string> {
     try {
         const response = await fetch(
             `http://localhost:8080/prompts`, {
@@ -9,7 +7,8 @@ export async function newPrompt(prompt): Promise<string> {
                 "Content-Type": "text/plain",
             },
             body: JSON.stringify({
-                text: prompt
+                text: prompt,
+                type: type
             })
         });
 

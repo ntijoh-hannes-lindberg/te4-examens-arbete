@@ -1,4 +1,3 @@
-import { redirect } from "react-router-dom";
 import { newPrompt } from "../services/apiService";
 import { useRef } from "react";
 
@@ -9,10 +8,9 @@ interface Props {
 
 function PromptInputComponent({ prompt, setPrompt }: Props) {
     const textareaRef = useRef<HTMLTextAreaElement>(null);
-
+    
     function handleChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
         setPrompt(e.target.value);
-
         const el = textareaRef.current;
         if (el) {
             el.style.height = "auto";
@@ -22,11 +20,12 @@ function PromptInputComponent({ prompt, setPrompt }: Props) {
 
     async function handleSubmit(formData: FormData) {
         const value = formData.get("query");
+        const type = formData.get("type") || "system";
         if (value === null || typeof value !== "string" || value.trim() === "") {
             alert("Prompt cannot be empty!");
             return;
         }
-        const error = await newPrompt(value);
+        const error = await newPrompt(value, type);
         setPrompt("");
         if (error) {
             alert(error);
@@ -44,6 +43,10 @@ function PromptInputComponent({ prompt, setPrompt }: Props) {
                 onChange={handleChange}
                 className="prompt-input"
                 />
+            <select name="type" className="prompt-type">
+                <option value="user">User</option>
+                <option value="system">System</option>
+            </select>
             <button type="submit">Submit</button>
         </form>
     );
