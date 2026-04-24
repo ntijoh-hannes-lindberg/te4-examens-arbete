@@ -27,7 +27,7 @@ function App() {
               <Route path='/' element={<Home />} />
               <Route path='/stats' element={<Stats />} />
               <Route path='/prompts' element={<Prompts prompt={prompt} setPrompt={setPrompt} />} />
-              <Route path='/prompts/edit' element={<EditPrompts />} />
+              <Route path='/prompts/edit/:id' element={<EditPrompts />} />
               <Route path='/outputs' element={<Outputs />} />
             </Routes>
           </div>

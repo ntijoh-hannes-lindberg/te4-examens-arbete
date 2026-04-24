@@ -79,7 +79,8 @@ function PromptListComponent({ onSelect }: Props) {
                         ))}
                     </select>
 
-                    <Link to="/prompts/edit">Edit</Link>
+                    
+                    <Link to={"/prompts/edit/" + systemPrompt.id}>Edit</Link>
                     <button onClick={() => handleDelete(systemPrompt.id)}>Delete</button>
                     <button onClick={() => handleSubmit(systemPrompt.text, userPrompts.find((p) => p.id === assignments[systemPrompt.id])?.text || "")}>{submitting === systemPrompt.text ? "Loading..." : "Submit"}</button>
                 </div>
