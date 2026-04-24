@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { Link } from 'react-router-dom';
+
 import { allPrompts, deletePrompt, newOutput } from "../services/apiService";
 import { type Prompt } from "../../types/prompt";
 
@@ -65,18 +67,19 @@ function PromptListComponent({ onSelect }: Props) {
                         {systemPrompt.text}
                     </p>
 
-                 <select
-                    value={assignments[systemPrompt.id] ?? ""}
-                    onChange={(e) => handleAssign(systemPrompt.id, Number(e.target.value))}
-                >
-                    <option value="" disabled>Choose User Prompt</option>
-                    {userPrompts.map((userPrompt) => (
-                        <option key={userPrompt.id} value={userPrompt.id}>
-                            {(userPrompt.title === "Untitled" ? " Id: " + String(userPrompt.id) : userPrompt.title)}
-                        </option>
-                    ))}
-                </select>
+                    <select
+                        value={assignments[systemPrompt.id] ?? ""}
+                        onChange={(e) => handleAssign(systemPrompt.id, Number(e.target.value))}
+                        >
+                        <option value="" disabled>Choose User Prompt</option>
+                        {userPrompts.map((userPrompt) => (
+                            <option key={userPrompt.id} value={userPrompt.id}>
+                                {(userPrompt.title === "Untitled" ? " Id: " + String(userPrompt.id) : userPrompt.title)}
+                            </option>
+                        ))}
+                    </select>
 
+                    <Link to="/prompts/edit">Edit</Link>
                     <button onClick={() => handleDelete(systemPrompt.id)}>Delete</button>
                     <button onClick={() => handleSubmit(systemPrompt.text, userPrompts.find((p) => p.id === assignments[systemPrompt.id])?.text || "")}>{submitting === systemPrompt.text ? "Loading..." : "Submit"}</button>
                 </div>

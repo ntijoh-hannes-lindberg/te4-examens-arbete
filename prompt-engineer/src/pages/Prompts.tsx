@@ -6,7 +6,7 @@ interface Props {
     setPrompt: (value: string) => void;
 }
 
-function Prompt({ prompt, setPrompt }: Props) {
+function Prompts({ prompt, setPrompt }: Props) {
   
     return (
         <>
@@ -16,4 +16,4 @@ function Prompt({ prompt, setPrompt }: Props) {
     );
 }
 
-export default Prompt;
+export default Prompts;

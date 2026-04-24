@@ -5,7 +5,7 @@ function AsideComponent() {
     <aside>
       <ul>
         <li><Link to="/stats">Stats</Link></li>
-        <li><Link to="/prompt">Prompt</Link></li>
+        <li><Link to="/prompts">Prompts</Link></li>
         <li><Link to="/outputs">Outputs</Link></li>
       </ul>
     </aside>
