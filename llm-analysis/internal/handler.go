@@ -17,7 +17,7 @@ func (a *App) newPromptHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = a.db.newPrompt(prompt.Text, prompt.Type)
+	err = a.db.newPrompt(prompt.Text, prompt.Type, prompt.Title)
 	if err != nil {
 		http.Error(w, "Failed to insert prompt", http.StatusInternalServerError)
 		return

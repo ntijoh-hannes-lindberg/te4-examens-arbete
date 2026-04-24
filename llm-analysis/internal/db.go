@@ -14,9 +14,10 @@ type DB struct {
 }
 
 type Prompt struct {
-	ID   int8       `json:"id"`
-	Text string     `json:"text"`
-	Type PromptType `json:"type"`
+	ID    int8       `json:"id"`
+	Text  string     `json:"text"`
+	Type  PromptType `json:"type"`
+	Title string     `json:"title"`
 }
 type PromptType string
 
@@ -67,7 +68,7 @@ func NewDB() *DB {
 }
 
 func (db *DB) getAllPrompts() ([]Prompt, error) {
-	rows, err := db.conn.Query(context.Background(), "SELECT id, text, type FROM prompts")
+	rows, err := db.conn.Query(context.Background(), "SELECT id, text, type, title FROM prompts")
 	if err != nil {
 		return nil, fmt.Errorf("querying prompts: %w", err)
 	}
@@ -76,7 +77,7 @@ func (db *DB) getAllPrompts() ([]Prompt, error) {
 	prompts := []Prompt{}
 	for rows.Next() {
 		var p Prompt
-		if err := rows.Scan(&p.ID, &p.Text, &p.Type); err != nil {
+		if err := rows.Scan(&p.ID, &p.Text, &p.Type, &p.Title); err != nil {
 			return nil, fmt.Errorf("scanning prompt: %w", err)
 		}
 		prompts = append(prompts, p)
@@ -85,8 +86,8 @@ func (db *DB) getAllPrompts() ([]Prompt, error) {
 	return prompts, nil
 }
 
-func (db *DB) newPrompt(text string, Type PromptType) error {
-	_, err := db.conn.Exec(context.Background(), "INSERT INTO prompts (text, type) VALUES ($1, $2)", text, Type)
+func (db *DB) newPrompt(text string, Type PromptType, Title string) error {
+	_, err := db.conn.Exec(context.Background(), "INSERT INTO prompts (text, type, title) VALUES ($1, $2, $3)", text, Type, Title)
 	if err != nil {
 		return fmt.Errorf("inserting prompt: %w", err)
 	}

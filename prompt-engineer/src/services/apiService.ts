@@ -1,4 +1,4 @@
-export async function newPrompt(prompt, type): Promise<string> {
+export async function newPrompt(prompt, type, title): Promise<string> {
     try {
         const response = await fetch(
             `http://localhost:8080/prompts`, {
@@ -8,7 +8,8 @@ export async function newPrompt(prompt, type): Promise<string> {
             },
             body: JSON.stringify({
                 text: prompt,
-                type: type
+                type: type,
+                title: title
             })
         });
 
@@ -34,7 +35,7 @@ export async function allPrompts() {
         const jsonResponse = await response.json()
         return jsonResponse 
     } catch (e) {
-        console.error("Posting new prompt: ", e);
+        console.error("Fetching all prompts: ", e);
         throw e
     }
 }

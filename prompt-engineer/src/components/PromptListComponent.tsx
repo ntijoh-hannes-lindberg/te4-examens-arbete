@@ -72,7 +72,7 @@ function PromptListComponent({ onSelect }: Props) {
                     <option value="" disabled>Choose User Prompt</option>
                     {userPrompts.map((userPrompt) => (
                         <option key={userPrompt.id} value={userPrompt.id}>
-                            {userPrompt.text}
+                            {userPrompt.title || " Id: " + String(userPrompt.id)}
                         </option>
                     ))}
                 </select>

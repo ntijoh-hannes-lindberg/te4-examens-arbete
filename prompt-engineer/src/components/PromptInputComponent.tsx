@@ -21,11 +21,12 @@ function PromptInputComponent({ prompt, setPrompt }: Props) {
     async function handleSubmit(formData: FormData) {
         const value = formData.get("query");
         const type = formData.get("type") || "system";
+        const title = formData.get("title") || "";
         if (value === null || typeof value !== "string" || value.trim() === "") {
             alert("Prompt cannot be empty!");
             return;
         }
-        const error = await newPrompt(value, type);
+        const error = await newPrompt(value, type, title);
         setPrompt("");
         if (error) {
             alert(error);
@@ -43,9 +44,10 @@ function PromptInputComponent({ prompt, setPrompt }: Props) {
                 onChange={handleChange}
                 className="prompt-input"
                 />
+                <input type="text" name="title" placeholder="Title..." className="prompt-title" />
             <select name="type" className="prompt-type">
-                <option value="user">User</option>
                 <option value="system">System</option>
+                <option value="user">User</option>
             </select>
             <button type="submit">Submit</button>
         </form>
