@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { allOutputs, deleteOutput, } from "../services/apiService";
 import { type Output } from "../../types/output";
+import ReactMarkdown from "react-markdown";
 
 function OutputListComponent() {
     const [outputs, setOutputs] = useState<Output[]>([]);
@@ -31,10 +32,10 @@ function OutputListComponent() {
         <>
             {outputs.map((output) => (
                 <div key={output.id}>
-                    <p>
-                        {output.text}
-                    </p>
-                    <button onClick={() => handleDelete(output.id)}>Delete</button>
+                    <div key={output.id}>
+                        <ReactMarkdown>{output.text}</ReactMarkdown>
+                        <button onClick={() => handleDelete(output.id)}>Delete</button>
+                    </div>
                 </div>
             ))}
         </>
