@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { allPrompts, deletePrompt } from "../services/apiService";
+import { allPrompts, deletePrompt, newOutput } from "../services/apiService";
 import { type Prompt } from "../../types/prompt";
 
 interface Props {
@@ -9,10 +9,10 @@ interface Props {
 function PromptListComponent({ onSelect }: Props) {
     const [prompts, setPrompts] = useState<Prompt[]>([]);
     const [loading, setLoading] = useState(true);
+    const [assignments, setAssignments] = useState<Record<number, number>>({});
 
     useEffect(() => {
         fetchPrompts();
-
         window.addEventListener("prompt-created", fetchPrompts);
         return () => window.removeEventListener("prompt-created", fetchPrompts);
     }, []);
@@ -31,20 +31,51 @@ function PromptListComponent({ onSelect }: Props) {
         const err = await deletePrompt(String(id));
         if (!err) fetchPrompts();
     }
+
+    function handleAssign(systemPromptId: number, userPromptId: number) {
+        setAssignments((prev) => ({ ...prev, [systemPromptId]: userPromptId }));
+    }
+
+   async function handleSubmit(systemPrompt: string, userPrompt: string) {
+        const err = await newOutput(systemPrompt, userPrompt);
+        if (err) {
+            alert(err);
+        } else {
+            alert("Output created successfully!");
+        }
+    }
+
     if (loading) return <p>Loading...</p>;
-    if (prompts.length == 0) return <p>No prompts found!</p>;
+    if (prompts.length === 0) return <p>No prompts found!</p>;
+
+    const systemPrompts = prompts.filter((p) => p.type === "system");
+    const userPrompts = prompts.filter((p) => p.type === "user");
 
     return (
         <>
-            {prompts.map((prompt) => (
-                <div key={prompt.id}>
+            {systemPrompts.map((systemPrompt) => (
+                <div key={systemPrompt.id}>
                     <p
-                        onClick={() => onSelect(prompt.text)}
-                        style={{ cursor: "pointer" }}
+                        onClick={() => onSelect(systemPrompt.text)}
+                        style={{ cursor: "pointer", margin: 0 }}
                     >
-                        Query: {prompt.text} Type: {prompt.type}
+                        {systemPrompt.text}
                     </p>
-                    <button onClick={() => handleDelete(prompt.id)}>Delete</button>
+
+                 <select
+                    value={assignments[systemPrompt.id] ?? ""}
+                    onChange={(e) => handleAssign(systemPrompt.id, Number(e.target.value))}
+                >
+                    <option value="" disabled>Choose User Prompt</option>
+                    {userPrompts.map((userPrompt) => (
+                        <option key={userPrompt.id} value={userPrompt.id}>
+                            {userPrompt.text}
+                        </option>
+                    ))}
+                </select>
+
+                    <button onClick={() => handleDelete(systemPrompt.id)}>Delete</button>
+                    <button onClick={() => handleSubmit(systemPrompt.text, userPrompts.find((p) => p.id === assignments[systemPrompt.id])?.text || "")}>Submit</button>
                 </div>
             ))}
         </>

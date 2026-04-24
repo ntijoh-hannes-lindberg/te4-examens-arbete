@@ -83,3 +83,24 @@ func (a *App) allOutputsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(outputs)
 }
+
+func (a *App) newOutputHandler(w http.ResponseWriter, r *http.Request) {
+	var message Message
+	err := json.NewDecoder(r.Body).Decode(&message)
+	if err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+	response, err := a.aiProvider.CallLLM(message.UserPrompt, message.SystemPrompt)
+	if err != nil {
+		http.Error(w, "Failed to call AI provider", http.StatusInternalServerError)
+		return
+	}
+	err = a.db.newOutput(response)
+	if err != nil {
+		http.Error(w, "Failed to insert output", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+}
