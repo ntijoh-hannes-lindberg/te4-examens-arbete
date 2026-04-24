@@ -10,6 +10,7 @@ function PromptListComponent({ onSelect }: Props) {
     const [prompts, setPrompts] = useState<Prompt[]>([]);
     const [loading, setLoading] = useState(true);
     const [assignments, setAssignments] = useState<Record<number, number>>({});
+    const [submitting, setSubmitting] = useState<string | null>(null);
 
     useEffect(() => {
         fetchPrompts();
@@ -37,7 +38,9 @@ function PromptListComponent({ onSelect }: Props) {
     }
 
    async function handleSubmit(systemPrompt: string, userPrompt: string) {
+        setSubmitting(systemPrompt);
         const err = await newOutput(systemPrompt, userPrompt);
+        setSubmitting(null);
         if (err) {
             alert(err);
         } else {
@@ -75,7 +78,7 @@ function PromptListComponent({ onSelect }: Props) {
                 </select>
 
                     <button onClick={() => handleDelete(systemPrompt.id)}>Delete</button>
-                    <button onClick={() => handleSubmit(systemPrompt.text, userPrompts.find((p) => p.id === assignments[systemPrompt.id])?.text || "")}>Submit</button>
+                    <button onClick={() => handleSubmit(systemPrompt.text, userPrompts.find((p) => p.id === assignments[systemPrompt.id])?.text || "")}>{submitting === systemPrompt.text ? "Loading..." : "Submit"}</button>
                 </div>
             ))}
         </>
