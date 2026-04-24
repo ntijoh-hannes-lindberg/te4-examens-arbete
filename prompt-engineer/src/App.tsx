@@ -6,7 +6,8 @@ import AsideComponent from './components/AsideComponent';
 import HeaderComponent from './components/HeaderComponent';
 
 import Stats from './pages/Stats'
-import Prompt from './pages/Prompt'
+import Prompts from './pages/Prompts'
+import EditPrompts from './pages/EditPrompts'
 import Home from './pages/Home'
 import Outputs from './pages/Outputs';
 
@@ -25,7 +26,8 @@ function App() {
             <Routes>
               <Route path='/' element={<Home />} />
               <Route path='/stats' element={<Stats />} />
-              <Route path='/prompt' element={<Prompt prompt={prompt} setPrompt={setPrompt} />} />
+              <Route path='/prompts' element={<Prompts prompt={prompt} setPrompt={setPrompt} />} />
+              <Route path='/prompts/edit' element={<EditPrompts />} />
               <Route path='/outputs' element={<Outputs />} />
             </Routes>
           </div>
