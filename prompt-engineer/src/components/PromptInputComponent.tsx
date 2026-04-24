@@ -21,7 +21,7 @@ function PromptInputComponent({ prompt, setPrompt }: Props) {
     async function handleSubmit(formData: FormData) {
         const value = formData.get("query");
         const type = formData.get("type") || "system";
-        const title = formData.get("title") || "";
+        const title = formData.get("title") || "Untitled";
         if (value === null || typeof value !== "string" || value.trim() === "") {
             alert("Prompt cannot be empty!");
             return;
