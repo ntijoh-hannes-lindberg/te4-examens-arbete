@@ -90,6 +90,31 @@ export async function deleteOutput(id: string) {
     }
 }
 
+export async function newOutput(systemPrompt: string, userPrompt: string) {
+    try {
+        const response = await fetch(
+            `http://localhost:8080/outputs`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                systemPrompt: systemPrompt,
+                userPrompt: userPrompt
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(response.status + " " + response.statusText);
+        }
+        return null
+    } catch (e) {
+        console.error("Posting new output: ", e);
+        return e.message
+    }
+}
+
 export function sleep(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
+

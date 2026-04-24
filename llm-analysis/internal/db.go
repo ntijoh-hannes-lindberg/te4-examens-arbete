@@ -42,6 +42,12 @@ type Chat struct {
 	Outputs      string
 }
 
+type Message struct {
+	ID           int8   `json:"id"`
+	SystemPrompt string `json:"systemPrompt"`
+	UserPrompt   string `json:"userPrompt"`
+}
+
 func NewDB() *DB {
 	godotenv.Load()
 
@@ -118,6 +124,14 @@ func (db *DB) deleteOutput(id int8) error {
 	_, err := db.conn.Exec(context.Background(), "DELETE FROM outputs WHERE id = $1", id)
 	if err != nil {
 		return fmt.Errorf("deleting output: %w", err)
+	}
+	return nil
+}
+
+func (db *DB) newOutput(text string) error {
+	_, err := db.conn.Exec(context.Background(), "INSERT INTO outputs (text) VALUES ($1)", text)
+	if err != nil {
+		return fmt.Errorf("inserting output: %w", err)
 	}
 	return nil
 }

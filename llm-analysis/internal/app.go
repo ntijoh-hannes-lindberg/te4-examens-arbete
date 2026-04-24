@@ -42,6 +42,7 @@ func NewApp() (*App, error) {
 		AllowCredentials: true,
 	}))
 	a.router.Post("/prompts", a.newPromptHandler)
+	a.router.Post("/outputs", a.newOutputHandler)
 	a.router.Get("/prompts", a.allPromptsHandler)
 	a.router.Get("/outputs", a.allOutputsHandler)
 	a.router.Delete("/prompts/delete/{id}", a.deletePromptHandler)
