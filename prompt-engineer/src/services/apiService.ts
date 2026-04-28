@@ -6,7 +6,7 @@ export async function newPrompt(prompt, type, title): Promise<string> {
             `http://localhost:8080/prompts`, {
             method: "POST",
             headers: {
-                "Content-Type": "text/plain",
+                "Content-Type": "application/json",
             },
             body: JSON.stringify({
                 text: prompt,
@@ -165,7 +165,25 @@ export async function newOutput(systemPrompt: string, userPrompt: string) {
     }
 }
 
-// Helpers
+export function allProperties() {
+    try {
+        return fetch(
+            `http://localhost:8080/properties`, {
+            method: "GET",
+        }).then((response) => {
+            if (!response.ok) {
+                throw new Error(response.status + " " + response.statusText);
+            }
+            return response.json();
+        });
+    } catch (e) {
+        console.error("Fetching all properties: ", e);
+        throw e
+    }
+}
+
+
+
 export function sleep(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }

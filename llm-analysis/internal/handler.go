@@ -151,3 +151,14 @@ func (a *App) newOutputHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusCreated)
 }
+
+func (a *App) allPropertiesHandler(w http.ResponseWriter, r *http.Request) {
+	properties, err := a.db.getAllProperties()
+	if err != nil {
+		http.Error(w, "Failed to fetch properties", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(properties)
+}
