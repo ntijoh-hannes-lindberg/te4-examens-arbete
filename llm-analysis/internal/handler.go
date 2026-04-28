@@ -40,7 +40,7 @@ func (a *App) allPromptsHandler(w http.ResponseWriter, r *http.Request) {
 func (a *App) deleteOutputHandler(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 
-	idNum, err := strconv.ParseInt(id, 10, 8)
+	idNum, err := strconv.ParseInt(id, 10, 64)
 	if err != nil {
 		http.Error(w, "Invalid id", http.StatusBadRequest)
 		return
@@ -58,7 +58,7 @@ func (a *App) deleteOutputHandler(w http.ResponseWriter, r *http.Request) {
 func (a *App) deletePromptHandler(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 
-	idNum, err := strconv.ParseInt(id, 10, 8)
+	idNum, err := strconv.ParseInt(id, 10, 64)
 	if err != nil {
 		http.Error(w, "Invalid id", http.StatusBadRequest)
 		return
