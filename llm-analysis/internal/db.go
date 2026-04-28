@@ -14,7 +14,7 @@ type DB struct {
 }
 
 type Prompt struct {
-	ID    int8       `json:"id"`
+	ID    int64      `json:"id"`
 	Text  string     `json:"text"`
 	Type  PromptType `json:"type"`
 	Title string     `json:"title"`
@@ -27,24 +27,24 @@ const (
 )
 
 type Output struct {
-	ID   int8   `json:"id"`
+	ID   int64  `json:"id"`
 	Text string `json:"text"`
 }
 
 type Property struct {
-	ID   int8   `json:"id"`
+	ID   int64  `json:"id"`
 	Name string `json:"name"`
 }
 
 type Chat struct {
-	ID           int8 `json:"id"`
+	ID           int64 `json:"id"`
 	SystemPrompt string
 	UserPrompt   string
 	Outputs      string
 }
 
 type Message struct {
-	ID           int8   `json:"id"`
+	ID           int64  `json:"id"`
 	SystemPrompt string `json:"systemPrompt"`
 	UserPrompt   string `json:"userPrompt"`
 }
@@ -94,7 +94,7 @@ func (db *DB) newPrompt(text string, Type PromptType, Title string) error {
 	return nil
 }
 
-func (db *DB) deletePrompt(id int8) error {
+func (db *DB) deletePrompt(id int64) error {
 	_, err := db.conn.Exec(context.Background(), "DELETE FROM prompts WHERE id = $1", id)
 	if err != nil {
 		return fmt.Errorf("deleting prompt: %w", err)
@@ -121,7 +121,7 @@ func (db *DB) getAllOutputs() ([]Output, error) {
 	return outputs, nil
 }
 
-func (db *DB) deleteOutput(id int8) error {
+func (db *DB) deleteOutput(id int64) error {
 	_, err := db.conn.Exec(context.Background(), "DELETE FROM outputs WHERE id = $1", id)
 	if err != nil {
 		return fmt.Errorf("deleting output: %w", err)
