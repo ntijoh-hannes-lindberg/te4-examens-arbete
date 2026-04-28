@@ -1,14 +1,20 @@
-import { newPrompt } from "../services/apiService";
-import { useRef } from "react";
+import { allProperties, newPrompt } from "../services/apiService";
+import { useRef, useState, useEffect } from "react";
+import { type Property } from "../../types/property";
 
 interface Props {
     prompt: string;
     setPrompt: (value: string) => void;
 }
 
-function PromptInputComponent({ prompt, setPrompt }: Props) {
+function PromptInputComponent({ prompt, setPrompt}: Props) {
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const [properties, setProperties] = useState<Property[]>([]);
     
+    useEffect(() => {
+        allProperties().then(setProperties);
+    }, []);
+
     function handleChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
         setPrompt(e.target.value);
         const el = textareaRef.current;
@@ -50,6 +56,13 @@ function PromptInputComponent({ prompt, setPrompt }: Props) {
             <select name="type" className="prompt-type">
                 <option value="system">System</option>
                 <option value="user">User</option>
+            </select>
+            <select name="property" className="prompt-property">
+            {properties.map((property) => (
+                <option key={property.id} value={property.id}>
+                    {(property.tag === "Untitled" ? " Id: " + String(property.id) : property.tag)}
+                </option>
+            ))}
             </select>
             <button type="submit">Submit</button>
         </form>

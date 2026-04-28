@@ -34,8 +34,8 @@ type Output struct {
 }
 
 type Property struct {
-	ID   int64  `json:"id"`
-	Name string `json:"name"`
+	ID   int8   `json:"id"`
+	Name string `json:"tag"`
 }
 
 type Chat struct {
@@ -165,4 +165,23 @@ func (db *DB) newOutput(text string, systemPromptID int64, userPromptID int64) e
 		return fmt.Errorf("inserting output: %v", err)
 	}
 	return nil
+}
+
+func (db *DB) getAllProperties() ([]Property, error) {
+	rows, err := db.conn.Query(context.Background(), "SELECT id, tag FROM properties")
+	if err != nil {
+		return nil, fmt.Errorf("querying properties: %w", err)
+	}
+	defer rows.Close()
+
+	properties := []Property{}
+	for rows.Next() {
+		var p Property
+		if err := rows.Scan(&p.ID, &p.Name); err != nil {
+			return nil, fmt.Errorf("scanning property: %w", err)
+		}
+		properties = append(properties, p)
+	}
+
+	return properties, nil
 }
