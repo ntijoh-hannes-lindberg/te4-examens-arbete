@@ -18,20 +18,23 @@ func (a *App) newPromptHandler(w http.ResponseWriter, r *http.Request) {
 		Title       string  `json:"title"`
 		PropertyIDs []int64 `json:"property_ids"`
 	}
-	json.NewDecoder(r.Body).Decode(&body)
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
 
-	var err error
-	err = a.db.newPrompt(body.Text, PromptType(body.Type), body.Title)
+	promptID, err := a.db.newPrompt(body.Text, PromptType(body.Type), body.Title)
 	if err != nil {
 		http.Error(w, "Failed to insert prompt", http.StatusInternalServerError)
 		return
 	}
-
-	// err = a.db.addPropertiesToPrompt(body.ID, body.PropertyIDs)
-	// if err != nil {
-	// 	http.Error(w, "Failed to associate properties with prompt", http.StatusInternalServerError)
-	// 	return
-	// }
+	if len(body.PropertyIDs) > 0 {
+		if err := a.db.addPropertiesToPrompt(promptID, body.PropertyIDs); err != nil {
+			fmt.Printf("Error associating properties with prompt: %v\n", err)
+			http.Error(w, "Failed to associate properties with prompt", http.StatusInternalServerError)
+			return
+		}
+	}
 
 	w.WriteHeader(http.StatusCreated)
 }
@@ -161,6 +164,24 @@ func (a *App) newOutputHandler(w http.ResponseWriter, r *http.Request) {
 
 func (a *App) allPropertiesHandler(w http.ResponseWriter, r *http.Request) {
 	properties, err := a.db.getAllProperties()
+	if err != nil {
+		http.Error(w, "Failed to fetch properties", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(properties)
+}
+
+func (a *App) getPropertiesForPromptHandler(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	idNum, err := strconv.ParseInt(id, 10, 64)
+	if err != nil {
+		http.Error(w, "Invalid id", http.StatusBadRequest)
+		return
+	}
+
+	properties, err := a.db.getPropertiesForPrompt(idNum)
 	if err != nil {
 		http.Error(w, "Failed to fetch properties", http.StatusInternalServerError)
 		return

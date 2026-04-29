@@ -1,6 +1,5 @@
 export async function newPrompt(prompt : string, type : string, title : string, properties : number[]): Promise<string> {
     try {
-        console.log("Posting new prompt with properties: ", properties);
         const response = await fetch(
             `http://localhost:8080/prompts`, {
             method: "POST",
@@ -11,7 +10,7 @@ export async function newPrompt(prompt : string, type : string, title : string, 
                 text: prompt,
                 type: type,
                 title: title,
-                properties: properties
+                property_ids: properties
             })
         });
 
@@ -182,6 +181,11 @@ export function allProperties() {
     }
 }
 
+export async function getPropertiesForPrompt(id: number) {
+    const response = await fetch(`http://localhost:8080/prompts/${id}/properties`);
+    if (!response.ok) throw new Error(response.status + " " + response.statusText);
+    return response.json();
+}
 
 
 export function sleep(ms: number) {
