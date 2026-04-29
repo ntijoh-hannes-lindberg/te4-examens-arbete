@@ -46,7 +46,7 @@ func (a *App) deleteOutputHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = a.db.deleteOutput(int64(idNum))
+	err = a.db.deleteOutput(idNum)
 	if err != nil {
 		http.Error(w, "Failed to delete output", http.StatusInternalServerError)
 		return
@@ -64,7 +64,7 @@ func (a *App) deletePromptHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = a.db.deletePrompt(int64(idNum))
+	err = a.db.deletePrompt(idNum)
 	if err != nil {
 		http.Error(w, "Failed to delete prompt", http.StatusInternalServerError)
 		return
