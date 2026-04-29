@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 )
 
 type DB struct {
-	conn *pgx.Conn
+	conn *pgxpool.Pool
 }
 
 type Prompt struct {
@@ -34,15 +34,14 @@ type Output struct {
 }
 
 type Property struct {
-	ID   int8   `json:"id"`
+	ID   int64  `json:"id"`
 	Name string `json:"tag"`
 }
 
-type Chat struct {
-	ID           int64 `json:"id"`
-	SystemPrompt string
-	UserPrompt   string
-	Outputs      string
+type ChatProperty struct {
+	ID         int64 `json:"id"`
+	PromptID   int64 `json:"promptId"`
+	PropertyID int64 `json:"propertyId"`
 }
 
 type Message struct {
@@ -57,18 +56,13 @@ type Message struct {
 func NewDB() *DB {
 	godotenv.Load()
 
-	config, err := pgx.ParseConfig(os.Getenv("DATABASE_URL"))
-	if err != nil {
-		os.Exit(1)
-	}
-	config.DefaultQueryExecMode = pgx.QueryExecModeSimpleProtocol
-	conn, err := pgx.ConnectConfig(context.Background(), config)
+	pool, err := pgxpool.New(context.Background(), os.Getenv("DATABASE_URL"))
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
 		os.Exit(1)
 	}
 	return &DB{
-		conn: conn,
+		conn: pool,
 	}
 }
 
@@ -168,7 +162,7 @@ func (db *DB) newOutput(text string, systemPromptID int64, userPromptID int64) e
 }
 
 func (db *DB) getAllProperties() ([]Property, error) {
-	rows, err := db.conn.Query(context.Background(), "SELECT id, tag FROM properties")
+	rows, err := db.conn.Query(context.Background(), "SELECT * FROM properties")
 	if err != nil {
 		return nil, fmt.Errorf("querying properties: %w", err)
 	}
@@ -184,4 +178,14 @@ func (db *DB) getAllProperties() ([]Property, error) {
 	}
 
 	return properties, nil
+}
+
+func (db *DB) addPropertiesToPrompt(promptID int64, propertyIDs []int64) error {
+	for _, propertyID := range propertyIDs {
+		_, err := db.conn.Exec(context.Background(), "INSERT INTO chat_properties (prompt_id, property_id) VALUES ($1, $2)", promptID, propertyID)
+		if err != nil {
+			return fmt.Errorf("associating property with prompt: %w", err)
+		}
+	}
+	return nil
 }
