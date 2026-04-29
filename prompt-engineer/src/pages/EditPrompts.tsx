@@ -13,6 +13,10 @@ function EditPrompts() {
     useEffect(() => {
         const controller = new AbortController();
 
+        if (prompt) {
+            return () => controller.abort();
+        }
+        
         const fetchPrompt = async () => {
             const prompt = await getPrompt(promptId)
 

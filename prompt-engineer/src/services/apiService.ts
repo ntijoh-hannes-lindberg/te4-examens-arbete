@@ -61,8 +61,30 @@ export async function getPrompt(id: string) {
     }
 }
 
-export async function updatePrompt(id: number, title: string, text: string) {
-    console.log(id, title, text)
+export async function updatePrompt(id: number, title: string, text: string, type: string) {
+    try {
+        const response = await fetch(
+            `http://localhost:8080/prompts/${id}/edit`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                title: title,
+                text: text,
+                type: type
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(response.status + " " + response.statusText);
+        }
+
+        return null
+    } catch (e) {
+        console.error("updating prompt: ", e);
+        return e.message
+    }
 }
 
 export async function deletePrompt(id: string) {
