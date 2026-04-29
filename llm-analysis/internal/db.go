@@ -87,12 +87,17 @@ func (db *DB) getAllPrompts() ([]Prompt, error) {
 	return prompts, nil
 }
 
-func (db *DB) newPrompt(text string, Type PromptType, Title string) error {
-	_, err := db.conn.Exec(context.Background(), "INSERT INTO prompts (text, type, title) VALUES ($1, $2, $3)", text, Type, Title)
+func (db *DB) newPrompt(text string, Type PromptType, Title string) (int64, error) {
+	var id int64
+	err := db.conn.QueryRow(
+		context.Background(),
+		"INSERT INTO prompts (text, type, title) VALUES ($1, $2, $3) RETURNING id",
+		text, Type, Title,
+	).Scan(&id)
 	if err != nil {
-		return fmt.Errorf("inserting prompt: %w", err)
+		return 0, fmt.Errorf("inserting prompt: %w", err)
 	}
-	return nil
+	return id, nil
 }
 
 func (db *DB) getPrompt(id int64) (Prompt, error) {
@@ -181,11 +186,40 @@ func (db *DB) getAllProperties() ([]Property, error) {
 }
 
 func (db *DB) addPropertiesToPrompt(promptID int64, propertyIDs []int64) error {
+
 	for _, propertyID := range propertyIDs {
-		_, err := db.conn.Exec(context.Background(), "INSERT INTO chat_properties (prompt_id, property_id) VALUES ($1, $2)", promptID, propertyID)
+		_, err := db.conn.Exec(
+			context.Background(),
+			"INSERT INTO prompts_to_properties (prompt_id, property_id) VALUES ($1, $2)",
+			promptID, propertyID,
+		)
 		if err != nil {
 			return fmt.Errorf("associating property with prompt: %w", err)
 		}
 	}
 	return nil
+}
+
+func (db *DB) getPropertiesForPrompt(promptID int64) ([]Property, error) {
+	rows, err := db.conn.Query(
+		context.Background(),
+		`SELECT p.id, p.tag FROM properties p
+		 JOIN prompts_to_properties pp ON pp.property_id = p.id
+		 WHERE pp.prompt_id = $1`,
+		promptID,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("querying properties for prompt: %w", err)
+	}
+	defer rows.Close()
+
+	properties := []Property{}
+	for rows.Next() {
+		var p Property
+		if err := rows.Scan(&p.ID, &p.Name); err != nil {
+			return nil, fmt.Errorf("scanning property: %w", err)
+		}
+		properties = append(properties, p)
+	}
+	return properties, nil
 }
