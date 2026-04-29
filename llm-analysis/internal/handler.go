@@ -12,19 +12,26 @@ import (
 /// Prompt handlers
 
 func (a *App) newPromptHandler(w http.ResponseWriter, r *http.Request) {
-
-	var prompt Prompt
-	err := json.NewDecoder(r.Body).Decode(&prompt)
-	if err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
-		return
+	var body struct {
+		Text        string  `json:"text"`
+		Type        string  `json:"type"`
+		Title       string  `json:"title"`
+		PropertyIDs []int64 `json:"property_ids"`
 	}
+	json.NewDecoder(r.Body).Decode(&body)
 
-	err = a.db.newPrompt(prompt.Text, prompt.Type, prompt.Title)
+	var err error
+	err = a.db.newPrompt(body.Text, PromptType(body.Type), body.Title)
 	if err != nil {
 		http.Error(w, "Failed to insert prompt", http.StatusInternalServerError)
 		return
 	}
+
+	// err = a.db.addPropertiesToPrompt(body.ID, body.PropertyIDs)
+	// if err != nil {
+	// 	http.Error(w, "Failed to associate properties with prompt", http.StatusInternalServerError)
+	// 	return
+	// }
 
 	w.WriteHeader(http.StatusCreated)
 }
