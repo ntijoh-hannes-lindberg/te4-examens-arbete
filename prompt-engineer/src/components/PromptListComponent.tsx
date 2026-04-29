@@ -29,7 +29,7 @@ function PromptListComponent({ onSelect }: Props) {
             setLoading(false);
         }
     }
-
+    
     async function handleDelete(id: number) {
         const err = await deletePrompt(String(id));
         if (!err) {
