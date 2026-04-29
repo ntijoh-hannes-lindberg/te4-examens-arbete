@@ -97,7 +97,7 @@ func (db *DB) newPrompt(text string, Type PromptType, Title string) error {
 	return nil
 }
 
-func (db *DB) getPrompt(id int8) (Prompt, error) {
+func (db *DB) getPrompt(id int64) (Prompt, error) {
 	var prompt Prompt
 	err := db.conn.QueryRow(context.Background(), "SELECT id, text, type, title FROM prompts WHERE id=$1", id).
 		Scan(&prompt.ID, &prompt.Text, &prompt.Type, &prompt.Title)
@@ -108,7 +108,7 @@ func (db *DB) getPrompt(id int8) (Prompt, error) {
 	return prompt, nil
 }
 
-func (db *DB) deletePrompt(id int8) error {
+func (db *DB) deletePrompt(id int64) error {
 	_, err := db.conn.Exec(context.Background(), "DELETE FROM prompts WHERE id = $1", id)
 	if err != nil {
 		return fmt.Errorf("deleting prompt: %w", err)
