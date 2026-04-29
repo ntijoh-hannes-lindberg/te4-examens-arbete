@@ -1,3 +1,5 @@
+// Prompt methods
+
 export async function newPrompt(prompt, type, title): Promise<string> {
     try {
         const response = await fetch(
@@ -59,22 +61,8 @@ export async function getPrompt(id: string) {
     }
 }
 
-export async function allOutputs() {
-    try {
-        const response = await fetch(
-            `http://localhost:8080/outputs`, {
-            method: "GET",
-        });
-
-        if (!response.ok) {
-            throw new Error(response.status + " " + response.statusText);
-        }
-        const jsonResponse = await response.json()
-        return jsonResponse 
-    } catch (e) {
-        console.error("Posting new prompt: ", e);
-        throw e
-    }
+export async function updatePrompt(id: number, title: string, text: string) {
+    console.log(id, title, text)
 }
 
 export async function deletePrompt(id: string) {
@@ -93,6 +81,27 @@ export async function deletePrompt(id: string) {
         return e.message
     }
 }
+
+// Output methods
+
+export async function allOutputs() {
+    try {
+        const response = await fetch(
+            `http://localhost:8080/outputs`, {
+            method: "GET",
+        });
+
+        if (!response.ok) {
+            throw new Error(response.status + " " + response.statusText);
+        }
+        const jsonResponse = await response.json()
+        return jsonResponse 
+    } catch (e) {
+        console.error("Posting new prompt: ", e);
+        throw e
+    }
+}
+
 export async function deleteOutput(id: string) {
     try {
         const response = await fetch(
@@ -134,6 +143,7 @@ export async function newOutput(systemPrompt: string, userPrompt: string) {
     }
 }
 
+// Helpers
 export function sleep(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }

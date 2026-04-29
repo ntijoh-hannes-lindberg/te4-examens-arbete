@@ -1,8 +1,8 @@
 import { TextField } from '../form/TextField'
 
-export function Title() {
+export function Title({title, setTitle}) {
     return (
-        <TextField label='Title' name='title' />
+        <TextField state={title} setState={setTitle} label='Title' />
     )
 }
 

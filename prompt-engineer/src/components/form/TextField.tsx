@@ -1,4 +1,8 @@
-export function TextField({label, name}) {
+export function TextField({state, setState, label}) {
+    function handleChange(e) {
+        setState(e.target.value)
+    }
+
     return (
         <label>
             {label}
@@ -6,6 +10,8 @@ export function TextField({label, name}) {
                 type="text"
                 name={name}
                 placeholder="Hey tell me a joke"
+                value={state}
+                onChange={handleChange}
             />
         </label>
     )
