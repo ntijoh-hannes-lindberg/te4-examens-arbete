@@ -2,6 +2,7 @@ package internal
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -35,6 +36,23 @@ func (a *App) allPromptsHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(prompts)
+}
+
+func (a *App) getPromptHandler(w http.ResponseWriter, r *http.Request) {
+	urlId := chi.URLParam(r, "id")
+	i64, err := strconv.ParseInt(urlId, 10, 8)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Could'nt parse prompt id: %v", err), http.StatusBadRequest)
+	}
+
+	prompt, err := a.db.getPrompt(int8(i64))
+	if err != nil {
+		fmt.Println(err)
+		http.Error(w, fmt.Sprintf("Sending request to data base: %v", err), http.StatusInternalServerError)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(prompt)
 }
 
 func (a *App) deleteOutputHandler(w http.ResponseWriter, r *http.Request) {

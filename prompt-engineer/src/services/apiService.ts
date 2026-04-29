@@ -40,6 +40,25 @@ export async function allPrompts() {
     }
 }
 
+export async function getPrompt(id: string) {
+    try {
+        const response = await fetch(
+            `http://localhost:8080/prompts/${id}`, {
+            method: "GET",
+        });
+
+        if (!response.ok) {
+            throw new Error(response.status + " " + response.statusText);
+        }
+
+        const jsonResponse = await response.json()
+        return jsonResponse 
+    } catch (e) {
+        console.error("Getting prompt: ", e);
+        throw e
+    }
+}
+
 export async function allOutputs() {
     try {
         const response = await fetch(
