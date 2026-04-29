@@ -9,7 +9,7 @@ export function EditComponent({ prompt, setPrompt }) {
   const [text, setText] = useState(prompt.text)
 
   function handleSave() {
-    updatePrompt(prompt.id, title, text)
+    updatePrompt(prompt.id, title, text, "system")
   }
 
   return (

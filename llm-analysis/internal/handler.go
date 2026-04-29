@@ -9,6 +9,8 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
+/// Prompt handlers
+
 func (a *App) newPromptHandler(w http.ResponseWriter, r *http.Request) {
 
 	var prompt Prompt
@@ -55,22 +57,21 @@ func (a *App) getPromptHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(prompt)
 }
 
-func (a *App) deleteOutputHandler(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
-
-	idNum, err := strconv.ParseInt(id, 10, 64)
+// Handler to update a prompt
+func (a *App) updatePromptHandler(w http.ResponseWriter, r *http.Request) {
+	urlId := chi.URLParam(r, "id")
+	id, err := strconv.ParseInt(urlId, 10, 64)
 	if err != nil {
-		http.Error(w, "Invalid id", http.StatusBadRequest)
-		return
+		http.Error(w, fmt.Sprintf("Could'nt parse prompt id: %v", err), http.StatusBadRequest)
 	}
 
-	err = a.db.deleteOutput(idNum)
+	var prompt Prompt
+	prompt.ID = id
+	err = json.NewDecoder(r.Body).Decode(&prompt)
 	if err != nil {
-		http.Error(w, "Failed to delete output", http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("Decoding prompt: %v", err), http.StatusBadRequest)
 		return
 	}
-
-	w.WriteHeader(http.StatusNoContent)
 }
 
 func (a *App) deletePromptHandler(w http.ResponseWriter, r *http.Request) {
@@ -85,6 +86,26 @@ func (a *App) deletePromptHandler(w http.ResponseWriter, r *http.Request) {
 	err = a.db.deletePrompt(idNum)
 	if err != nil {
 		http.Error(w, "Failed to delete prompt", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+/// Output handlers
+
+func (a *App) deleteOutputHandler(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+
+	idNum, err := strconv.ParseInt(id, 10, 64)
+	if err != nil {
+		http.Error(w, "Invalid id", http.StatusBadRequest)
+		return
+	}
+
+	err = a.db.deleteOutput(idNum)
+	if err != nil {
+		http.Error(w, "Failed to delete output", http.StatusInternalServerError)
 		return
 	}
 
