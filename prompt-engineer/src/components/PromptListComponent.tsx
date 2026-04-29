@@ -64,7 +64,7 @@ function PromptListComponent({ onSelect }: Props) {
                         onClick={() => onSelect(systemPrompt.text)}
                         style={{ cursor: "pointer", margin: 0 }}
                     >
-                        {systemPrompt.text}
+                        {systemPrompt.title}
                     </p>
 
                     <select
