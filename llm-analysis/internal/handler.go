@@ -45,12 +45,13 @@ func (a *App) getPromptHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(urlId, 10, 64)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Could'nt parse prompt id: %v", err), http.StatusBadRequest)
+		return
 	}
 
 	prompt, err := a.db.getPrompt(id)
 	if err != nil {
-		fmt.Println(err)
 		http.Error(w, fmt.Sprintf("Sending request to data base: %v", err), http.StatusInternalServerError)
+		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -62,16 +63,23 @@ func (a *App) updatePromptHandler(w http.ResponseWriter, r *http.Request) {
 	urlId := chi.URLParam(r, "id")
 	id, err := strconv.ParseInt(urlId, 10, 64)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Could'nt parse prompt id: %v", err), http.StatusBadRequest)
+		http.Error(w, fmt.Sprintf("Parsing prompt id: %v", err), http.StatusBadRequest)
+		return
 	}
 
 	var prompt Prompt
 	prompt.ID = id
-	err = json.NewDecoder(r.Body).Decode(&prompt)
-	if err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&prompt); err != nil {
 		http.Error(w, fmt.Sprintf("Decoding prompt: %v", err), http.StatusBadRequest)
 		return
 	}
+
+	if err := a.db.updatePrompt(prompt); err != nil {
+		http.Error(w, fmt.Sprintf("Sending to DB client: %v", err), http.StatusBadRequest)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func (a *App) deletePromptHandler(w http.ResponseWriter, r *http.Request) {

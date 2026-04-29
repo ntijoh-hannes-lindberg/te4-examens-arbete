@@ -108,6 +108,16 @@ func (db *DB) getPrompt(id int64) (Prompt, error) {
 	return prompt, nil
 }
 
+// Update prompt
+func (db *DB) updatePrompt(prompt Prompt) error {
+	_, err := db.conn.Exec(context.Background(), "UPDATE prompts SET text = $1, title = $2, type = $3 WHERE id = $4", prompt.Text, prompt.Title, prompt.Type, prompt.ID)
+	if err != nil {
+		return fmt.Errorf("updating prompt: %w", err)
+	}
+
+	return nil
+}
+
 func (db *DB) deletePrompt(id int64) error {
 	_, err := db.conn.Exec(context.Background(), "DELETE FROM prompts WHERE id = $1", id)
 	if err != nil {
