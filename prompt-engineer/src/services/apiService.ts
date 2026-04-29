@@ -1,7 +1,6 @@
-// Prompt methods
-
-export async function newPrompt(prompt, type, title): Promise<string> {
+export async function newPrompt(prompt : string, type : string, title : string, properties : number[]): Promise<string> {
     try {
+        console.log("Posting new prompt with properties: ", properties);
         const response = await fetch(
             `http://localhost:8080/prompts`, {
             method: "POST",
@@ -11,7 +10,8 @@ export async function newPrompt(prompt, type, title): Promise<string> {
             body: JSON.stringify({
                 text: prompt,
                 type: type,
-                title: title
+                title: title,
+                properties: properties
             })
         });
 

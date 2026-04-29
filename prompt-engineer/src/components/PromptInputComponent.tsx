@@ -26,13 +26,16 @@ function PromptInputComponent({ prompt, setPrompt}: Props) {
 
     async function handleSubmit(formData: FormData) {
         const value = formData.get("query");
-        const type = formData.get("type") || "system";
-        const title = formData.get("title") || "Untitled";
+        const type = formData.get("type");
+        const title = formData.get("title");
+        const properties = formData.getAll("properties").map((id) => Number(id));
         if (value === null || typeof value !== "string" || value.trim() === "") {
             alert("Prompt cannot be empty!");
             return;
         }
-        const error = await newPrompt(value, type, title);
+        const typeStr = typeof type === "string" ? type : "system";
+        const titleStr = typeof title === "string" ? title : "Untitled";
+        const error = await newPrompt(value, typeStr, titleStr, properties);
         setPrompt("");
         if (error) {
             alert(error);
@@ -57,13 +60,11 @@ function PromptInputComponent({ prompt, setPrompt}: Props) {
                 <option value="system">System</option>
                 <option value="user">User</option>
             </select>
-            <select name="property" className="prompt-property">
-            {properties.map((property) => (
-                <option key={property.id} value={property.id}>
-                    {(property.tag === "Untitled" ? " Id: " + String(property.id) : property.tag)}
-                </option>
-            ))}
-            </select>
+                {properties.map((property) => (
+                    <li key={property.id} value={property.id}>
+                        <input name="properties" type="checkbox" value={property.id} /> {property.tag}
+                    </li>
+                ))}
             <button type="submit">Submit</button>
         </form>
     );
