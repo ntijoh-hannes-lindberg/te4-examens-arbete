@@ -1,8 +1,8 @@
 import { TextField } from '../form/TextField'
 
-export function Text() {
+export function Text({text, setText}) {
     return (
-        <TextField label="Prompt" name='text' />
+        <TextField state={text} setState={setText} label="Prompt" />
     )
 }
 
