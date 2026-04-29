@@ -1,15 +1,21 @@
-import { Title } from '../edit/Title'
-import { Text } from '../edit/Text'
+import { useState } from 'react';
 
-import { useState } from 'react'
-import { updatePrompt } from '../../services/apiService'
+import { Title } from '../edit/Title';
+import { Text } from '../edit/Text';
+import { updatePrompt } from '../../services/apiService';
 
 export function EditComponent({ prompt, setPrompt }) {
   const [title, setTitle] = useState(prompt.title)
   const [text, setText] = useState(prompt.text)
 
-  function handleSave() {
-    updatePrompt(prompt.id, title, text, "system")
+  async function handleSave() {
+    const err = await updatePrompt(prompt.id, title, text, "system")
+    if (err) {
+      alert(err)
+      return
+    }
+
+    alert("Saved!")
   }
 
   return (
