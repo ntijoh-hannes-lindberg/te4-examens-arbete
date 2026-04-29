@@ -1,7 +1,6 @@
 import { useState } from 'react';
 
-import { Title } from '../edit/Title';
-import { Text } from '../edit/Text';
+import { TextField } from '../form/TextField';
 import { updatePrompt } from '../../services/apiService';
 
 export function EditComponent({ prompt, setPrompt }) {
@@ -21,8 +20,8 @@ export function EditComponent({ prompt, setPrompt }) {
   return (
     <>
       <form action={handleSave}>
-        <Title title={title} setTitle={setTitle} />
-        <Text text={text} setText={setText} />
+        <TextField state={title} setState={setTitle} label='Title' />
+        <TextField state={text} setState={setText} label="Prompt" />
         <button type='submit'>Save</button>
       </form>
     </>
