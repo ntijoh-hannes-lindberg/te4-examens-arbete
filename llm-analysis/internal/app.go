@@ -44,6 +44,7 @@ func NewApp() (*App, error) {
 	a.router.Post("/prompts", a.newPromptHandler)
 	a.router.Post("/outputs", a.newOutputHandler)
 	a.router.Get("/prompts", a.allPromptsHandler)
+	a.router.Get("/prompts/{id}", a.getPromptHandler)
 	a.router.Get("/outputs", a.allOutputsHandler)
 	a.router.Delete("/prompts/delete/{id}", a.deletePromptHandler)
 	a.router.Delete("/outputs/delete/{id}", a.deleteOutputHandler)

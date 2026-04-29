@@ -44,7 +44,9 @@ function PromptInputComponent({ prompt, setPrompt }: Props) {
                 onChange={handleChange}
                 className="prompt-input"
                 />
-                <input type="text" name="title" placeholder="Title..." className="prompt-title" />
+
+            <input type="text" name="title" placeholder="Title..." className="prompt-title" />
+            
             <select name="type" className="prompt-type">
                 <option value="system">System</option>
                 <option value="user">User</option>
