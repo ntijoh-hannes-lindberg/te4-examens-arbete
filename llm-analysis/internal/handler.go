@@ -40,12 +40,12 @@ func (a *App) allPromptsHandler(w http.ResponseWriter, r *http.Request) {
 
 func (a *App) getPromptHandler(w http.ResponseWriter, r *http.Request) {
 	urlId := chi.URLParam(r, "id")
-	i64, err := strconv.ParseInt(urlId, 10, 8)
+	id, err := strconv.ParseInt(urlId, 10, 64)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Could'nt parse prompt id: %v", err), http.StatusBadRequest)
 	}
 
-	prompt, err := a.db.getPrompt(int8(i64))
+	prompt, err := a.db.getPrompt(id)
 	if err != nil {
 		fmt.Println(err)
 		http.Error(w, fmt.Sprintf("Sending request to data base: %v", err), http.StatusInternalServerError)
