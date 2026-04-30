@@ -141,7 +141,7 @@ export async function deleteOutput(id: string) {
     }
 }
 
-export async function newOutput(systemPrompt: string, userPrompt: string) {
+export async function newOutput(systemPrompt: string, userPrompt: string, SystemPromptId: number, UserPromptId: number) {
     try {
         const response = await fetch(
             `http://localhost:8080/outputs`, {
@@ -150,6 +150,8 @@ export async function newOutput(systemPrompt: string, userPrompt: string) {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
+                systemPromptId: SystemPromptId,
+                userPromptId: UserPromptId,
                 systemPrompt: systemPrompt,
                 userPrompt: userPrompt
             })

@@ -30,7 +30,7 @@ func NewOpenRouterAIProvider() (*OpenRouterAIProvider, error) {
 	return &OpenRouterAIProvider{
 		client: client,
 		token:  token,
-		model:  "nvidia/nemotron-3-nano-30b-a3b:free",
+		model:  "tencent/hy3-preview:free",
 	}, nil
 }
 
