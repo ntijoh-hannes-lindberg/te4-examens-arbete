@@ -183,11 +183,24 @@ export function allProperties() {
     }
 }
 
-export async function getPropertiesForPrompt(id: number) {
-    const response = await fetch(`http://localhost:8080/prompts/${id}/properties`);
-    if (!response.ok) throw new Error(response.status + " " + response.statusText);
-    return response.json();
+export async function allPropertiesForPrompts() {
+    try {
+        const response = await fetch(
+            `http://localhost:8080/propertiesForPrompts`, {
+            method: "GET",
+        });
+
+        if (!response.ok) {
+            throw new Error(response.status + " " + response.statusText);
+        }
+        const jsonResponse = await response.json()
+        return jsonResponse 
+    } catch (e) {
+        console.error("Fetching all propertiesForPrompts: ", e);
+        throw e
+    }
 }
+
 
 
 export function sleep(ms: number) {
