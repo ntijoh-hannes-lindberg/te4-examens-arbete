@@ -173,15 +173,8 @@ func (a *App) allPropertiesHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(properties)
 }
 
-func (a *App) getPropertiesForPromptHandler(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
-	idNum, err := strconv.ParseInt(id, 10, 64)
-	if err != nil {
-		http.Error(w, "Invalid id", http.StatusBadRequest)
-		return
-	}
-
-	properties, err := a.db.getPropertiesForPrompt(idNum)
+func (a *App) allPropertiesForPromptHandler(w http.ResponseWriter, r *http.Request) {
+	properties, err := a.db.allPropertiesForPrompt()
 	if err != nil {
 		http.Error(w, "Failed to fetch properties", http.StatusInternalServerError)
 		return

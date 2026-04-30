@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link } from 'react-router-dom';
-
-import { allPrompts, deletePrompt, newOutput } from "../services/apiService";
+import { allPrompts, allProperties, deletePrompt, newOutput, allPropertiesForPrompts } from "../services/apiService";
 import { type Prompt } from "../../types/prompt";
+import { type PropertiesForPrompt } from "../../types/propertyConnection"
+import { type Property } from "../../types/property";
 
 interface Props {
     onSelect: (text: string) => void;
@@ -13,6 +14,8 @@ function PromptListComponent({ onSelect }: Props) {
     const [loading, setLoading] = useState(true);
     const [assignments, setAssignments] = useState<Record<number, number>>({});
     const [submitting, setSubmitting] = useState<string | null>(null);
+    const [propertiesForPrompt, setPropertiesForPrompt] = useState<PropertiesForPrompt[]>([]);
+    const [property, setProperty] = useState<Property[]>([]);
 
     useEffect(() => {
         fetchPrompts();
@@ -23,6 +26,8 @@ function PromptListComponent({ onSelect }: Props) {
     async function fetchPrompts() {
         try {
             setPrompts(await allPrompts());
+            setProperty( await allProperties())
+            setPropertiesForPrompt( await allPropertiesForPrompts())
         } catch (error) {
             console.error("Failed to fetch prompts:", error);
         } finally {
@@ -33,6 +38,16 @@ function PromptListComponent({ onSelect }: Props) {
     async function handleDelete(id: number) {
         const err = await deletePrompt(String(id));
         if (!err) fetchPrompts();
+    }
+
+    function handleProperties(promptId: number): Property[]{
+        const connections = propertiesForPrompt.filter((p) => p.prompt_id === promptId);
+        if (connections.length === 0) { 
+            return [{ id: 1, tag: "No tags picked" }]
+        }
+        return connections
+            .map((conn) => property.find((prop) => prop.id === conn.property_id))
+            .filter((prop): prop is Property => prop !== undefined);
     }
 
     function handleAssign(systemPromptId: number, userPromptId: number) {
@@ -60,6 +75,11 @@ function PromptListComponent({ onSelect }: Props) {
         <>
             {systemPrompts.map((systemPrompt) => (
                 <div key={systemPrompt.id}>
+                    <div>
+                        Tags: {handleProperties(systemPrompt.id).map((prop) => (
+                            <li key={prop.id}>{prop.tag} </li>
+                        ))}
+                    </div>
                     <p
                         onClick={() => onSelect(systemPrompt.text)}
                         style={{ cursor: "pointer", margin: 0 }}
