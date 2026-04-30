@@ -10,6 +10,7 @@ interface Props {
 function PromptInputComponent({ prompt, setPrompt}: Props) {
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const [properties, setProperties] = useState<Property[]>([]);
+    const [selectedType, setSelectedType] = useState<string>("system");
     
     useEffect(() => {
         allProperties().then(setProperties);
@@ -53,19 +54,32 @@ function PromptInputComponent({ prompt, setPrompt}: Props) {
                 onChange={handleChange}
                 className="prompt-input"
                 />
-
-            <input type="text" name="title" placeholder="Title..." className="prompt-title" />
-            
-            <select name="type" className="prompt-type">
+                <input type="text" name="title" placeholder="Title..." className="prompt-title" />
+            <select 
+                name="type" 
+                className="prompt-type"
+                value={selectedType}
+                onChange={(e) => setSelectedType(e.target.value)}
+            >
                 <option value="system">System</option>
                 <option value="user">User</option>
             </select>
-                {properties.map((property) => (
-                    <li key={property.id} value={property.id}>
-                        <input name="properties" type="checkbox" value={property.id} /> {property.tag}
-                    </li>
-                ))}
+
             <button type="submit">Submit</button>
+            {selectedType === "system" && (
+                <>
+                    {properties.map((property) => (
+                        <li key={property.id}>
+                            <input 
+                                name="properties" 
+                                type="checkbox" 
+                                value={property.id}
+                            /> 
+                            {property.tag}
+                        </li>
+                    ))}
+                </>
+            )}
         </form>
     );
 }

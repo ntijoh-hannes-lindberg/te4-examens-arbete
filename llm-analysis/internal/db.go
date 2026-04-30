@@ -52,7 +52,12 @@ type Message struct {
 	UserPrompt     string `json:"userPrompt"`
 }
 
-// Creating new DB handler
+type PromptToProperties struct {
+	ID          int64 `json:"id"`
+	Porperty_id int64 `json:"property_id"`
+	Prompt_id   int64 `json:"prompt_id"`
+}
+
 func NewDB() *DB {
 	godotenv.Load()
 
@@ -204,26 +209,21 @@ func (db *DB) addPropertiesToPrompt(promptID int64, propertyIDs []int64) error {
 	return nil
 }
 
-func (db *DB) getPropertiesForPrompt(promptID int64) ([]Property, error) {
-	rows, err := db.conn.Query(
-		context.Background(),
-		`SELECT p.id, p.tag FROM properties p
-		 JOIN prompts_to_properties pp ON pp.property_id = p.id
-		 WHERE pp.prompt_id = $1`,
-		promptID,
-	)
+func (db *DB) allPropertiesForPrompt() ([]PromptToProperties, error) {
+	rows, err := db.conn.Query(context.Background(), "SELECT id, property_id, prompt_id FROM prompts_to_properties")
 	if err != nil {
-		return nil, fmt.Errorf("querying properties for prompt: %w", err)
+		return nil, fmt.Errorf("querying prompts: %w", err)
 	}
 	defer rows.Close()
 
-	properties := []Property{}
+	promptToProperties := []PromptToProperties{}
 	for rows.Next() {
-		var p Property
-		if err := rows.Scan(&p.ID, &p.Name); err != nil {
-			return nil, fmt.Errorf("scanning property: %w", err)
+		var p PromptToProperties
+		if err := rows.Scan(&p.ID, &p.Porperty_id, &p.Prompt_id); err != nil {
+			return nil, fmt.Errorf("scanning promptToProperties: %w", err)
 		}
-		properties = append(properties, p)
+		promptToProperties = append(promptToProperties, p)
 	}
-	return properties, nil
+
+	return promptToProperties, nil
 }
