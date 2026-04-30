@@ -122,7 +122,11 @@ func (db *DB) updatePrompt(prompt Prompt) error {
 }
 
 func (db *DB) deletePrompt(id int64) error {
-	_, err := db.conn.Exec(context.Background(), "DELETE FROM prompts WHERE id = $1", id)
+	_, err := db.conn.Exec(context.Background(), "DELETE FROM prompts_to_properties WHERE prompt_id = $1", id)
+	if err != nil {
+		return fmt.Errorf("deleting property connection: %w", err)
+	}
+	_, err = db.conn.Exec(context.Background(), "DELETE FROM prompts WHERE id = $1", id)
 	if err != nil {
 		return fmt.Errorf("deleting prompt: %w", err)
 	}
