@@ -32,16 +32,21 @@ function PromptListComponent({ onSelect }: Props) {
 
     async function handleDelete(id: number) {
         const err = await deletePrompt(String(id));
-        if (!err) fetchPrompts();
+        if (!err) {
+            fetchPrompts()
+        } else {
+            alert("Delete the outputs connected to this prompt before you delete it")
+        }
     }
 
     function handleAssign(systemPromptId: number, userPromptId: number) {
         setAssignments((prev) => ({ ...prev, [systemPromptId]: userPromptId }));
     }
 
-   async function handleSubmit(systemPrompt: string, userPrompt: string) {
+   async function handleSubmit(systemPrompt: string, userPrompt: string, systemPromptID: number, userPromptID: number ) {
         setSubmitting(systemPrompt);
-        const err = await newOutput(systemPrompt, userPrompt);
+
+        const err = await newOutput(systemPrompt, userPrompt, systemPromptID, userPromptID);
         setSubmitting(null);
         if (err) {
             alert(err);
@@ -81,8 +86,12 @@ function PromptListComponent({ onSelect }: Props) {
 
                     
                     <Link to={"/prompts/edit/" + systemPrompt.id}>Edit</Link>
-                    <button onClick={() => handleDelete(systemPrompt.id)}>Delete</button>
-                    <button onClick={() => handleSubmit(systemPrompt.text, userPrompts.find((p) => p.id === assignments[systemPrompt.id])?.text || "")}>{submitting === systemPrompt.text ? "Loading..." : "Submit"}</button>
+                    <button className="deleteButtton" onClick={() => handleDelete(systemPrompt.id)}>Delete</button>
+                    <button onClick={() => handleSubmit(systemPrompt.text, 
+                        userPrompts.find((p) => p.id === assignments[systemPrompt.id])?.text || "", 
+                        systemPrompt.id, userPrompts.find((p) => p.id === assignments[systemPrompt.id])?.id)}>
+                        {submitting === systemPrompt.text ? "Loading..." : "Submit"}
+                    </button>
                 </div>
             ))}
         </>

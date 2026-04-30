@@ -13,6 +13,12 @@ type DB struct {
 	conn *pgx.Conn
 }
 
+type PromptsToOutputs struct {
+	ID        int64 `json:"id"`
+	Output_id int64 `json:"output_id"`
+	Prompt_id int64 `json:"prompt_id"`
+}
+
 type Prompt struct {
 	ID    int64      `json:"id"`
 	Text  string     `json:"text"`
@@ -44,9 +50,11 @@ type Chat struct {
 }
 
 type Message struct {
-	ID           int64  `json:"id"`
-	SystemPrompt string `json:"systemPrompt"`
-	UserPrompt   string `json:"userPrompt"`
+	ID             int64  `json:"Id"`
+	SystemPromptID int64  `json:"systemPromptId"`
+	UserPromptID   int64  `json:"UserPromptId"`
+	SystemPrompt   string `json:"systemPrompt"`
+	UserPrompt     string `json:"userPrompt"`
 }
 
 // Creating new DB handler
@@ -148,15 +156,28 @@ func (db *DB) getAllOutputs() ([]Output, error) {
 }
 
 func (db *DB) deleteOutput(id int64) error {
-	_, err := db.conn.Exec(context.Background(), "DELETE FROM outputs WHERE id = $1", id)
+	_, err := db.conn.Exec(context.Background(), "DELETE FROM prompts_to_outputs WHERE output_id = $1", id)
+	if err != nil {
+		return fmt.Errorf("deleting prompt to output connection: %w", err)
+	}
+	_, err = db.conn.Exec(context.Background(), "DELETE FROM outputs WHERE id = $1", id)
 	if err != nil {
 		return fmt.Errorf("deleting output: %w", err)
 	}
 	return nil
 }
 
-func (db *DB) newOutput(text string) error {
-	_, err := db.conn.Exec(context.Background(), "INSERT INTO outputs (text) VALUES ($1)", text)
+func (db *DB) newOutput(text string) (int64, error) {
+	var id int64
+	err := db.conn.QueryRow(context.Background(), "INSERT INTO outputs (text) VALUES ($1) RETURNING id", text).Scan(&id)
+	if err != nil {
+		return 0, fmt.Errorf("inserting output: %w", err)
+	}
+	return id, nil
+}
+
+func (db *DB) addPromptToOutputs(systemPromptID int64, userPromptID int64, outputID int64) error {
+	_, err := db.conn.Exec(context.Background(), "INSERT INTO prompts_to_outputs (output_id, user_prompt_id, system_prompt_id) VALUES ($1, $2, $3)", outputID, userPromptID, systemPromptID)
 	if err != nil {
 		return fmt.Errorf("inserting output: %w", err)
 	}

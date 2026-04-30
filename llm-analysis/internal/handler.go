@@ -143,9 +143,16 @@ func (a *App) newOutputHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to call AI provider", http.StatusInternalServerError)
 		return
 	}
-	err = a.db.newOutput(response)
+
+	outputID, err := a.db.newOutput(response)
 	if err != nil {
 		http.Error(w, "Failed to insert output", http.StatusInternalServerError)
+		return
+	}
+
+	err = a.db.addPromptToOutputs(message.SystemPromptID, message.UserPromptID, outputID)
+	if err != nil {
+		http.Error(w, "Failed to make a output to prompt relation", http.StatusInternalServerError)
 		return
 	}
 
