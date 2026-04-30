@@ -1,17 +1,16 @@
-// Prompt methods
-
-export async function newPrompt(prompt, type, title): Promise<string> {
+export async function newPrompt(prompt : string, type : string, title : string, properties : number[]): Promise<string> {
     try {
         const response = await fetch(
             `http://localhost:8080/prompts`, {
             method: "POST",
             headers: {
-                "Content-Type": "text/plain",
+                "Content-Type": "application/json",
             },
             body: JSON.stringify({
                 text: prompt,
                 type: type,
-                title: title
+                title: title,
+                property_ids: properties
             })
         });
 
@@ -165,7 +164,43 @@ export async function newOutput(systemPrompt: string, userPrompt: string) {
     }
 }
 
-// Helpers
+export function allProperties() {
+    try {
+        return fetch(
+            `http://localhost:8080/properties`, {
+            method: "GET",
+        }).then((response) => {
+            if (!response.ok) {
+                throw new Error(response.status + " " + response.statusText);
+            }
+            return response.json();
+        });
+    } catch (e) {
+        console.error("Fetching all properties: ", e);
+        throw e
+    }
+}
+
+export async function allPropertiesForPrompts() {
+    try {
+        const response = await fetch(
+            `http://localhost:8080/propertiesForPrompts`, {
+            method: "GET",
+        });
+
+        if (!response.ok) {
+            throw new Error(response.status + " " + response.statusText);
+        }
+        const jsonResponse = await response.json()
+        return jsonResponse 
+    } catch (e) {
+        console.error("Fetching all propertiesForPrompts: ", e);
+        throw e
+    }
+}
+
+
+
 export function sleep(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }

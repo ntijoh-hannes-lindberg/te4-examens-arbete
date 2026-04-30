@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 )
 
 type DB struct {
-	conn *pgx.Conn
+	conn *pgxpool.Pool
 }
 
 type Prompt struct {
@@ -33,14 +33,13 @@ type Output struct {
 
 type Property struct {
 	ID   int64  `json:"id"`
-	Name string `json:"name"`
+	Name string `json:"tag"`
 }
 
-type Chat struct {
-	ID           int64 `json:"id"`
-	SystemPrompt string
-	UserPrompt   string
-	Outputs      string
+type ChatProperty struct {
+	ID         int64 `json:"id"`
+	PromptID   int64 `json:"promptId"`
+	PropertyID int64 `json:"propertyId"`
 }
 
 type Message struct {
@@ -49,22 +48,22 @@ type Message struct {
 	UserPrompt   string `json:"userPrompt"`
 }
 
-// Creating new DB handler
+type PromptToProperties struct {
+	ID          int64 `json:"id"`
+	Porperty_id int64 `json:"property_id"`
+	Prompt_id   int64 `json:"prompt_id"`
+}
+
 func NewDB() *DB {
 	godotenv.Load()
 
-	config, err := pgx.ParseConfig(os.Getenv("DATABASE_URL"))
-	if err != nil {
-		os.Exit(1)
-	}
-	config.DefaultQueryExecMode = pgx.QueryExecModeSimpleProtocol
-	conn, err := pgx.ConnectConfig(context.Background(), config)
+	pool, err := pgxpool.New(context.Background(), os.Getenv("DATABASE_URL"))
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
 		os.Exit(1)
 	}
 	return &DB{
-		conn: conn,
+		conn: pool,
 	}
 }
 
@@ -89,12 +88,17 @@ func (db *DB) getAllPrompts() ([]Prompt, error) {
 	return prompts, nil
 }
 
-func (db *DB) newPrompt(text string, Type PromptType, Title string) error {
-	_, err := db.conn.Exec(context.Background(), "INSERT INTO prompts (text, type, title) VALUES ($1, $2, $3)", text, Type, Title)
+func (db *DB) newPrompt(text string, Type PromptType, Title string) (int64, error) {
+	var id int64
+	err := db.conn.QueryRow(
+		context.Background(),
+		"INSERT INTO prompts (text, type, title) VALUES ($1, $2, $3) RETURNING id",
+		text, Type, Title,
+	).Scan(&id)
 	if err != nil {
-		return fmt.Errorf("inserting prompt: %w", err)
+		return 0, fmt.Errorf("inserting prompt: %w", err)
 	}
-	return nil
+	return id, nil
 }
 
 func (db *DB) getPrompt(id int64) (Prompt, error) {
@@ -119,7 +123,11 @@ func (db *DB) updatePrompt(prompt Prompt) error {
 }
 
 func (db *DB) deletePrompt(id int64) error {
-	_, err := db.conn.Exec(context.Background(), "DELETE FROM prompts WHERE id = $1", id)
+	_, err := db.conn.Exec(context.Background(), "DELETE FROM prompts_to_properties WHERE prompt_id = $1", id)
+	if err != nil {
+		return fmt.Errorf("deleting property connection: %w", err)
+	}
+	_, err = db.conn.Exec(context.Background(), "DELETE FROM prompts WHERE id = $1", id)
 	if err != nil {
 		return fmt.Errorf("deleting prompt: %w", err)
 	}
@@ -161,4 +169,57 @@ func (db *DB) newOutput(text string) error {
 		return fmt.Errorf("inserting output: %w", err)
 	}
 	return nil
+}
+
+func (db *DB) getAllProperties() ([]Property, error) {
+	rows, err := db.conn.Query(context.Background(), "SELECT * FROM properties")
+	if err != nil {
+		return nil, fmt.Errorf("querying properties: %w", err)
+	}
+	defer rows.Close()
+
+	properties := []Property{}
+	for rows.Next() {
+		var p Property
+		if err := rows.Scan(&p.ID, &p.Name); err != nil {
+			return nil, fmt.Errorf("scanning property: %w", err)
+		}
+		properties = append(properties, p)
+	}
+
+	return properties, nil
+}
+
+func (db *DB) addPropertiesToPrompt(promptID int64, propertyIDs []int64) error {
+
+	for _, propertyID := range propertyIDs {
+		_, err := db.conn.Exec(
+			context.Background(),
+			"INSERT INTO prompts_to_properties (prompt_id, property_id) VALUES ($1, $2)",
+			promptID, propertyID,
+		)
+		if err != nil {
+			return fmt.Errorf("associating property with prompt: %w", err)
+		}
+	}
+	return nil
+}
+
+func (db *DB) allPropertiesForPrompt() ([]PromptToProperties, error) {
+	rows, err := db.conn.Query(context.Background(), "SELECT id, property_id, prompt_id FROM prompts_to_properties")
+	if err != nil {
+		return nil, fmt.Errorf("querying prompts: %w", err)
+	}
+	defer rows.Close()
+
+	promptToProperties := []PromptToProperties{}
+	for rows.Next() {
+		var p PromptToProperties
+		if err := rows.Scan(&p.ID, &p.Porperty_id, &p.Prompt_id); err != nil {
+			return nil, fmt.Errorf("scanning promptToProperties: %w", err)
+		}
+		promptToProperties = append(promptToProperties, p)
+	}
+
+	return promptToProperties, nil
 }
