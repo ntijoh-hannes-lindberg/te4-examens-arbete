@@ -45,7 +45,9 @@ function PromptListComponent({ onSelect }: Props) {
 
    async function handleSubmit(systemPrompt: string, userPrompt: string, systemPromptID: number, userPromptID: number ) {
         setSubmitting(systemPrompt);
-
+        if (!userPrompt && !userPromptID) {
+            alert("No user prompt selected")
+        }
         const err = await newOutput(systemPrompt, userPrompt, systemPromptID, userPromptID);
         setSubmitting(null);
         if (err) {
