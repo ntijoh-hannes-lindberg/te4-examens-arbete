@@ -144,15 +144,9 @@ func (a *App) newOutputHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	outputID, err := a.db.newOutput(response)
+	err = a.db.newOutput(response, message.SystemPromptID, message.UserPromptID)
 	if err != nil {
 		http.Error(w, "Failed to insert output", http.StatusInternalServerError)
-		return
-	}
-
-	err = a.db.addPromptToOutputs(message.SystemPromptID, message.UserPromptID, outputID)
-	if err != nil {
-		http.Error(w, "Failed to make a output to prompt relation", http.StatusInternalServerError)
 		return
 	}
 

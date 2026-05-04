@@ -8,6 +8,7 @@ import HeaderComponent from './components/HeaderComponent';
 import Stats from './pages/Stats'
 import Prompts from './pages/Prompts'
 import EditPrompts from './pages/EditPrompts'
+import Prompt from './pages/Prompt'
 import Home from './pages/Home'
 import Outputs from './pages/Outputs';
 
@@ -28,6 +29,7 @@ function App() {
               <Route path='/stats' element={<Stats />} />
               <Route path='/prompts' element={<Prompts prompt={prompt} setPrompt={setPrompt} />} />
               <Route path='/prompts/edit/:id' element={<EditPrompts />} />
+              <Route path='/prompts/:id' element={<Prompt/>} />
               <Route path='/outputs' element={<Outputs />} />
             </Routes>
           </div>

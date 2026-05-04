@@ -13,12 +13,6 @@ type DB struct {
 	conn *pgx.Conn
 }
 
-type PromptsToOutputs struct {
-	ID        int64 `json:"id"`
-	Output_id int64 `json:"output_id"`
-	Prompt_id int64 `json:"prompt_id"`
-}
-
 type Prompt struct {
 	ID    int64      `json:"id"`
 	Text  string     `json:"text"`
@@ -33,8 +27,10 @@ const (
 )
 
 type Output struct {
-	ID   int64  `json:"id"`
-	Text string `json:"text"`
+	ID             int64  `json:"id"`
+	Text           string `json:"text"`
+	SystemPromptID *int64 `json:"system_prompt_id"`
+	UserPromptID   *int64 `json:"user_prompt_id"`
 }
 
 type Property struct {
@@ -137,7 +133,7 @@ func (db *DB) deletePrompt(id int64) error {
 // Output methods
 
 func (db *DB) getAllOutputs() ([]Output, error) {
-	rows, err := db.conn.Query(context.Background(), "SELECT id, text FROM outputs")
+	rows, err := db.conn.Query(context.Background(), "SELECT id, text, system_prompt_id, user_prompt_id FROM outputs")
 	if err != nil {
 		return nil, fmt.Errorf("querying outputs: %w", err)
 	}
@@ -146,7 +142,7 @@ func (db *DB) getAllOutputs() ([]Output, error) {
 	outputs := []Output{}
 	for rows.Next() {
 		var o Output
-		if err := rows.Scan(&o.ID, &o.Text); err != nil {
+		if err := rows.Scan(&o.ID, &o.Text, &o.SystemPromptID, &o.UserPromptID); err != nil {
 			return nil, fmt.Errorf("scanning output: %w", err)
 		}
 		outputs = append(outputs, o)
@@ -156,30 +152,17 @@ func (db *DB) getAllOutputs() ([]Output, error) {
 }
 
 func (db *DB) deleteOutput(id int64) error {
-	_, err := db.conn.Exec(context.Background(), "DELETE FROM prompts_to_outputs WHERE output_id = $1", id)
-	if err != nil {
-		return fmt.Errorf("deleting prompt to output connection: %w", err)
-	}
-	_, err = db.conn.Exec(context.Background(), "DELETE FROM outputs WHERE id = $1", id)
+	_, err := db.conn.Exec(context.Background(), "DELETE FROM outputs WHERE id = $1", id)
 	if err != nil {
 		return fmt.Errorf("deleting output: %w", err)
 	}
 	return nil
 }
 
-func (db *DB) newOutput(text string) (int64, error) {
-	var id int64
-	err := db.conn.QueryRow(context.Background(), "INSERT INTO outputs (text) VALUES ($1) RETURNING id", text).Scan(&id)
+func (db *DB) newOutput(text string, systemPromptID int64, userPromptID int64) error {
+	_, err := db.conn.Exec(context.Background(), "INSERT INTO outputs (text, system_prompt_id, user_prompt_id) VALUES ($1, $2, $3)", text, systemPromptID, userPromptID)
 	if err != nil {
-		return 0, fmt.Errorf("inserting output: %w", err)
-	}
-	return id, nil
-}
-
-func (db *DB) addPromptToOutputs(systemPromptID int64, userPromptID int64, outputID int64) error {
-	_, err := db.conn.Exec(context.Background(), "INSERT INTO prompts_to_outputs (output_id, user_prompt_id, system_prompt_id) VALUES ($1, $2, $3)", outputID, userPromptID, systemPromptID)
-	if err != nil {
-		return fmt.Errorf("inserting output: %w", err)
+		return fmt.Errorf("inserting output: %v", err)
 	}
 	return nil
 }
