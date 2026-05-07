@@ -30,7 +30,6 @@ func (a *App) newPromptHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	if len(body.PropertyIDs) > 0 {
 		if err := a.db.addPropertiesToPrompt(promptID, body.PropertyIDs); err != nil {
-			fmt.Printf("Error associating properties with prompt: %v\n", err)
 			http.Error(w, "Failed to associate properties with prompt", http.StatusInternalServerError)
 			return
 		}
@@ -76,15 +75,14 @@ func (a *App) updatePromptHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("Parsing prompt id: %v", err), http.StatusBadRequest)
 		return
 	}
-
-	var prompt Prompt
-	prompt.ID = id
-	if err := json.NewDecoder(r.Body).Decode(&prompt); err != nil {
+	var updatePrompt UpdatePrompt
+	updatePrompt.ID = id
+	if err := json.NewDecoder(r.Body).Decode(&updatePrompt); err != nil {
 		http.Error(w, fmt.Sprintf("Decoding prompt: %v", err), http.StatusBadRequest)
 		return
 	}
 
-	if err := a.db.updatePrompt(prompt); err != nil {
+	if err := a.db.updatePrompt(updatePrompt); err != nil {
 		http.Error(w, fmt.Sprintf("Sending to DB client: %v", err), http.StatusBadRequest)
 		return
 	}

@@ -33,7 +33,7 @@ function EditPrompts() {
 
     return (
         <>
-            <EditComponent prompt={prompt} setPrompt={setPrompt} />
+            <EditComponent prompt={prompt} />
         </>
     );
 }

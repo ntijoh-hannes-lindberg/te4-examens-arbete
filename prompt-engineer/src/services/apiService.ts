@@ -15,7 +15,8 @@ export async function newPrompt(prompt : string, type : string, title : string, 
         });
 
         if (!response.ok) {
-            throw new Error(response.status + " " + response.statusText);
+            const errorText = await response.text(); 
+            throw new Error(`${response.status} ${response.statusText}: ${errorText}`);
         }
         return null
     } catch (e) {
@@ -31,7 +32,8 @@ export async function allPrompts() {
         });
 
         if (!response.ok) {
-            throw new Error(response.status + " " + response.statusText);
+            const errorText = await response.text(); 
+            throw new Error(`${response.status} ${response.statusText}: ${errorText}`);
         }
         const jsonResponse = await response.json()
         return jsonResponse 
@@ -49,7 +51,8 @@ export async function getPrompt(id: string) {
         });
 
         if (!response.ok) {
-            throw new Error(response.status + " " + response.statusText);
+            const errorText = await response.text(); 
+            throw new Error(`${response.status} ${response.statusText}: ${errorText}`);
         }
 
         const jsonResponse = await response.json()
@@ -60,7 +63,7 @@ export async function getPrompt(id: string) {
     }
 }
 
-export async function updatePrompt(id: number, title: string, text: string, type: string) {
+export async function updatePrompt(id: number, title: string, text: string, type: string, propsIDs: number[]) {
     try {
         const response = await fetch(
             `http://localhost:8080/prompts/${id}/edit`, {
@@ -71,12 +74,14 @@ export async function updatePrompt(id: number, title: string, text: string, type
             body: JSON.stringify({
                 title: title,
                 text: text,
-                type: type
+                type: type,
+                propsIDs: propsIDs
             })
         });
 
-        if (!response.ok) {
-            throw new Error(response.status + " " + response.statusText);
+       if (!response.ok) {
+            const errorText = await response.text(); 
+            throw new Error(`${response.status} ${response.statusText}: ${errorText}`);
         }
 
         return null
@@ -94,7 +99,8 @@ export async function deletePrompt(id: string) {
         });
 
         if (!response.ok) {
-            throw new Error(response.status + " " + response.statusText);
+            const errorText = await response.text(); 
+            throw new Error(`${response.status} ${response.statusText}: ${errorText}`);
         }
         return null
     } catch (e) {
@@ -113,7 +119,8 @@ export async function allOutputs() {
         });
 
         if (!response.ok) {
-            throw new Error(response.status + " " + response.statusText);
+            const errorText = await response.text(); 
+            throw new Error(`${response.status} ${response.statusText}: ${errorText}`);
         }
         const jsonResponse = await response.json()
         return jsonResponse 
@@ -131,7 +138,8 @@ export async function deleteOutput(id: string) {
         });
 
         if (!response.ok) {
-            throw new Error(response.status + " " + response.statusText);
+            const errorText = await response.text(); 
+            throw new Error(`${response.status} ${response.statusText}: ${errorText}`);
         }
         return null
     } catch (e) {
@@ -155,9 +163,9 @@ export async function newOutput(systemPrompt: string, userPrompt: string, System
                 userPrompt: userPrompt
             })
         });
-
         if (!response.ok) {
-            throw new Error(response.status + " " + response.statusText);
+            const errorText = await response.text(); 
+            throw new Error(`${response.status} ${response.statusText}: ${errorText}`);
         }
         return null
     } catch (e) {
@@ -173,7 +181,8 @@ export function allProperties() {
             method: "GET",
         }).then((response) => {
             if (!response.ok) {
-                throw new Error(response.status + " " + response.statusText);
+                const errorText = response.text(); 
+                throw new Error(`${response.status} ${response.statusText}: ${errorText}`);
             }
             return response.json();
         });
@@ -191,7 +200,8 @@ export async function allPropertiesForPrompts() {
         });
 
         if (!response.ok) {
-            throw new Error(response.status + " " + response.statusText);
+            const errorText = await response.text(); 
+            throw new Error(`${response.status} ${response.statusText}: ${errorText}`);
         }
         const jsonResponse = await response.json()
         return jsonResponse 
