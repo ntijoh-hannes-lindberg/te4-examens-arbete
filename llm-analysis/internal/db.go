@@ -5,12 +5,21 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 )
 
 type DB struct {
 	conn *pgxpool.Pool
+}
+
+type UpdatePrompt struct {
+	ID       int64      `json:"id"`
+	Text     string     `json:"text"`
+	Type     PromptType `json:"type"`
+	Title    string     `json:"title"`
+	PropsIDs []int      `json:"propsIDs"`
 }
 
 type Prompt struct {
@@ -54,21 +63,28 @@ type Message struct {
 
 type PromptToProperties struct {
 	ID          int64 `json:"id"`
-	Porperty_id int64 `json:"property_id"`
+	Property_id int64 `json:"property_id"`
 	Prompt_id   int64 `json:"prompt_id"`
 }
 
 func NewDB() *DB {
 	godotenv.Load()
 
-	pool, err := pgxpool.New(context.Background(), os.Getenv("DATABASE_URL"))
+	config, err := pgxpool.ParseConfig(os.Getenv("DATABASE_URL"))
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to parse config: %v\n", err)
+		os.Exit(1)
+	}
+
+	// Stäng av prepared statement cache
+	config.ConnConfig.DefaultQueryExecMode = pgx.QueryExecModeSimpleProtocol
+
+	pool, err := pgxpool.NewWithConfig(context.Background(), config)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
 		os.Exit(1)
 	}
-	return &DB{
-		conn: pool,
-	}
+	return &DB{conn: pool}
 }
 
 // Prompt methods
@@ -117,21 +133,33 @@ func (db *DB) getPrompt(id int64) (Prompt, error) {
 }
 
 // Update prompt
-func (db *DB) updatePrompt(prompt Prompt) error {
-	_, err := db.conn.Exec(context.Background(), "UPDATE prompts SET text = $1, title = $2, type = $3 WHERE id = $4", prompt.Text, prompt.Title, prompt.Type, prompt.ID)
+func (db *DB) updatePrompt(prompt UpdatePrompt) error {
+	tx, err := db.conn.Begin(context.Background())
+	if err != nil {
+		return fmt.Errorf("beginning transaction: %w", err)
+	}
+	defer tx.Rollback(context.Background())
+
+	_, err = tx.Exec(context.Background(), "DELETE FROM prompts_to_properties WHERE prompt_id = $1", prompt.ID)
+	if err != nil {
+		return fmt.Errorf("deleting props: %w", err)
+	}
+	for _, id := range prompt.PropsIDs {
+		_, err = tx.Exec(context.Background(), "INSERT INTO prompts_to_properties (prompt_id, property_id) VALUES ($1, $2)", prompt.ID, id)
+		if err != nil {
+			return fmt.Errorf("inserting props: %w", err)
+		}
+	}
+	_, err = tx.Exec(context.Background(), "UPDATE prompts SET text = $1, title = $2, type = $3 WHERE id = $4", prompt.Text, prompt.Title, prompt.Type, prompt.ID)
 	if err != nil {
 		return fmt.Errorf("updating prompt: %w", err)
 	}
 
-	return nil
+	return tx.Commit(context.Background())
 }
 
 func (db *DB) deletePrompt(id int64) error {
-	_, err := db.conn.Exec(context.Background(), "DELETE FROM prompts_to_properties WHERE prompt_id = $1", id)
-	if err != nil {
-		return fmt.Errorf("deleting property connection: %w", err)
-	}
-	_, err = db.conn.Exec(context.Background(), "DELETE FROM prompts WHERE id = $1", id)
+	_, err := db.conn.Exec(context.Background(), "DELETE FROM prompts WHERE id = $1", id)
 	if err != nil {
 		return fmt.Errorf("deleting prompt: %w", err)
 	}
@@ -219,7 +247,7 @@ func (db *DB) allPropertiesForPrompt() ([]PromptToProperties, error) {
 	promptToProperties := []PromptToProperties{}
 	for rows.Next() {
 		var p PromptToProperties
-		if err := rows.Scan(&p.ID, &p.Porperty_id, &p.Prompt_id); err != nil {
+		if err := rows.Scan(&p.ID, &p.Property_id, &p.Prompt_id); err != nil {
 			return nil, fmt.Errorf("scanning promptToProperties: %w", err)
 		}
 		promptToProperties = append(promptToProperties, p)
