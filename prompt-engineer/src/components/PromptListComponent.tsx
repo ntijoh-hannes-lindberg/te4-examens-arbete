@@ -63,7 +63,7 @@ function PromptListComponent({ onSelect }: Props) {
         if (!userPrompt && !userPromptID) {
             alert("No user prompt selected")
         }
-        const err = await newOutput(systemPrompt, userPrompt, systemPromptID, userPromptID);
+        const err = await newOutput(systemPrompt + "Return only valid JSON in markdown format. ", userPrompt, systemPromptID, userPromptID);
         setSubmitting(null);
         if (err) {
             alert(err);
